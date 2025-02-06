@@ -9,6 +9,6 @@
 - [ ] Lauffähige App erstellen 🔴
 - [ ] Konvertierung der Tabellen nach MongoDB, einzeln und als embedded Collection
 - [ ] Logging von Konvertierungen 🔴
-- [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für eine bestimmte Fahrt  🔴
-- [ ] Report 2: Alle Fahrer finden, die innerhalb der letzten drei Monate eine Fahrt durchgeführt haben  🔴
+- [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für eine bestimmte Fahrt (als SQL codiert) 🔴
+- [ ] Report 2: Alle Fahrer finden, die innerhalb der letzten drei Monate eine Fahrt durchgeführt haben (als SQL codiert)  🔴
      
