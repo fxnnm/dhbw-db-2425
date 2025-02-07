@@ -2,7 +2,7 @@
 
 ## Teil 1 ➡️
 - [ ] ER-Modell als PDF 🔴
-- [ ] SQL-Skripte zur Erstellung des DB-Schemas, lauffähig für MySQL 🔴
+- [ ] SQL-Skripte zur Erstellung des DB-Schemas (lauffähig für MySQL) 🔴
 
 ## Teil 2 ➡️
 - [ ] Import aller Daten in das SQL-Schema (über SQL/MySQL) 🔴
