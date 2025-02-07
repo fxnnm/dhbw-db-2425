@@ -11,4 +11,5 @@
 - [ ] Logging von Konvertierungen (als SQL codiert) 🔴
 - [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für eine bestimmte Fahrt (als SQL codiert) 🔴
 - [ ] Report 2: Alle Fahrer finden, die innerhalb der letzten drei Monate eine Fahrt durchgeführt haben (als SQL codiert)  🔴
+- [ ] Hinzufügen der Collection unfall.json  🔴
      
