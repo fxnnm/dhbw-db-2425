@@ -6,7 +6,7 @@
 
 ## Teil 2 ➡️
 - [ ] Import aller Daten in das SQL-Schema (über SQL/MySQL) 🔴
-- [ ] Lauffähige App erstellen 🔴
+- [ ] Lauffähige App erstellen (Programmrumpf ergänzen) 🔴
 - [ ] Konvertierung der Tabellen nach MongoDB, einzeln und als embedded Collection (SQL und/oder Python)
 - [ ] Logging von Konvertierungen (als SQL codiert) 🔴
 - [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für eine bestimmte Fahrt (als SQL codiert) 🔴
