@@ -1,4 +1,4 @@
-# DHBW-DB-2425 – README.md (Improved Style)
+# DHBW-DB-2425 – README.md
 
 ## 📚 Project Overview  
 **DHBW-DB_2023_24_App**  
