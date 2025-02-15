@@ -89,5 +89,3 @@ db.Hochschule.drop()
 
 ---
 
-*This guide is designed to make working with MongoDB easier and more readable.*  
-📘 Happy coding at **DHBW Stuttgart**!
