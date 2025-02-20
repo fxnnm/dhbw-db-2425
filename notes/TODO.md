@@ -5,7 +5,7 @@
 - [ ] SQL-Skripte zur Erstellung des DB-Schemas (lauffähig für MySQL) 🔴
 
 ## Teil 2 ➡️
-- [ ] Import aller Daten in das MySQL-Schema (über SQL/MySQL) 🔴
+- [ ] Import aller Daten in das MySQL-Schema, evtl. Datenbereinigung (über SQL/MySQL) 🔴
 - [ ] Alle Importe innerhalb von Transaktionen 🔴
 - [ ] Lauffähige App erstellen (Programmrumpf ergänzen) 🔴
 - [ ] Konvertierung der Tabellen nach MongoDB, einzeln und als embedded Collection (SQL und/oder Python)
@@ -15,4 +15,7 @@
 - [ ] Hinzufügen der Collection unfall.json 🔴
 - [ ] Editieren der Fahrer-Tabelle soll getriggert werden (als SQL codiert) 🔴
 - [ ] Eine Stored Procedure zum Hinzufügen einer neuen Fahrt (als SQL codiert) 🔴
+- [ ] Es soll die Möglichkeit bestehen, mit zwei MySQL-Datenbanken arbeiten zu können (Prod/Test) 🔴
+
+
      
