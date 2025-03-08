@@ -13,9 +13,10 @@
 - [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für eine bestimmte Fahrt (als SQL codiert) 🔴
 - [ ] Report 2: Alle Fahrer finden, die innerhalb der letzten drei Monate eine Fahrt durchgeführt haben (als SQL codiert) 🔴
 - [ ] Hinzufügen der Collection unfall.json 🔴
-- [ ] Editieren der Fahrer-Tabelle soll getriggert werden (als SQL codiert) 🔴
+- [ ] Editieren der MySQL-Tabellen soll getriggert werden (als SQL codiert) 🔴
+- [ ] Änderungen sollen immer persistent in die MySQL-Datenbank geschrieben werden 🔴
 - [ ] Eine Stored Procedure zum Hinzufügen einer neuen Fahrt (als SQL codiert) 🔴
-- [ ] Es soll die Möglichkeit bestehen, mit zwei MySQL-Datenbanken arbeiten zu können (Prod/Test) 🔴
+
 
 
      
