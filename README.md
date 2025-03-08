@@ -51,7 +51,7 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
    ```
 3. **Run the application:**  
    ```bash
-   flask run
+   flask run (or PyCharm, Visual Code, ...)
    ```
 
 ---
