@@ -23,8 +23,17 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
    ```
 2. **Set environment variables:** (via `.env` file)
    ```env
-   DB_NAME=my_database
-   ACTIVE_MONGO_DB=development
+   SECRET_KEY=3b9a21c8ef0b4a95a24bc52de4dc56f7
+
+   MYSQL_HOST=127.0.0.1
+   MYSQL_USER=root
+   MYSQL_PASSWORD=admin123
+   MYSQL_DB_NAME=telematik
+
+   MONGO_HOST=localhost
+   MONGO_PORT=27017
+   MONGO_DB_NAME=telematik
+   
    ```
 3. **Run the application:**  
    ```bash
