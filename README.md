@@ -22,7 +22,7 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-repo.git
+   git clone https://github.com/karkessler/dhbw-db-2425.git
    cd dhbw-db-2425
 
 2. Set and activate a virtual environment:
