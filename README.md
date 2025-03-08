@@ -17,10 +17,24 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
 
 ---
 ### 💻 How to Run
-1. **Install dependencies:**  
+
+## Installation
+
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/your-repo.git
+   cd dhbw-db-2425
+
+2. Set and activate a virtual environment:
+   ```sh
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+
+3. **Install dependencies:**  
    ```bash
    pip install -r requirements.txt
    ```
+   
 2. **Set environment variables:** (via `.env` file)
    ```env
    SECRET_KEY=3b9a21c8ef0b4a95a24bc52de4dc56f7
