@@ -43,11 +43,38 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
 ---
 ### 📂 Project Structure
 ```
-project/
-├── app.py              # Main Flask Application
-├── routes.py           # Route Handlers
-├── templates/          # HTML Templates
-└── static/             # CSS and JS Files
+├── app.py                # Main Flask Application
+├── .env                  # Environment Variables
+├── api
+│   ├── routes
+│   │   ├── route.py      # Route Handlers
+├── core                  # Core functionalities
+├── data                  # Data files (CSV, JSON)
+│   ├── 01_fahrzeug.csv
+│   ├── unfall.json
+├── events                # Event Handling
+├── infrastructure        # Backend and Helpers
+│   ├── common
+│   │   ├── db_helpers.py  # Database Helper Functions
+│   ├── config
+│   │   ├── config.py     # Configuration File
+│   ├── database
+│   │   ├── helpers
+│   │   │   ├── helpers.py # Additional Database Helpers
+│   ├── service           # Business Logic
+│   ├── logging           # Logging Configuration
+├── static                # CSS, JS, Images
+├── tests                 # Unit and Integration Tests
+├── web                   # Frontend
+│   ├── templates         # HTML Templates
+│   │   ├── index.html
+│   │   ├── layout.html
+│   │   ├── add_data.html
+│   │   ├── convert.html
+│   │   ├── reports.html
+│   │   ├── select_table.html
+│   │   ├── view_table.html
+
 ```
 
 ---
