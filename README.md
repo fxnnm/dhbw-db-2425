@@ -28,7 +28,7 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
 2. Set and activate a virtual environment:
    ```sh
    python -m venv .venv
-   source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+   source .venv/bin/activate  # On Windows 
 
 3. **Install dependencies:**  
    ```bash
@@ -37,16 +37,16 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
    
 2. **Set environment variables:** (via `.env` file)
    ```env
-   SECRET_KEY=3b9a21c8ef0b4a95a24bc52de4dc56f7
+   SECRET_KEY=...
 
-   MYSQL_HOST=127.0.0.1
-   MYSQL_USER=root
-   MYSQL_PASSWORD=admin123
-   MYSQL_DB_NAME=telematik
+   MYSQL_HOST=...
+   MYSQL_USER=...
+   MYSQL_PASSWORD=...
+   MYSQL_DB_NAME=...
 
-   MONGO_HOST=localhost
-   MONGO_PORT=27017
-   MONGO_DB_NAME=telematik
+   MONGO_HOST=...
+   MONGO_PORT=27017...
+   MONGO_DB_NAME=telematik...
    
    ```
 3. **Run the application:**  
@@ -69,7 +69,7 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
 ├── events                # Event Handling
 ├── infrastructure        # Backend and Helpers
 │   ├── common
-│   │   ├── db_helpers.py  # Database Helper Functions
+│   │   ├──               # Common infrastructure
 │   ├── config
 │   │   ├── config.py     # Configuration File
 │   ├── database
