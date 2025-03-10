@@ -1,0 +1,341 @@
+[
+  {
+    "id": 1001,
+    "fahrtid": 401,
+    "unfall_zeit": "2025-01-10T08:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 1200,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+  {
+    "id": 1002,
+    "fahrtid": 401,
+    "unfall_zeit": "2025-01-10T15:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 300,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+
+  {
+    "id": 1003,
+    "fahrtid": 402,
+    "unfall_zeit": "2025-01-11T08:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 2500,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+  {
+    "id": 1004,
+    "fahrtid": 402,
+    "unfall_zeit": "2025-01-11T15:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 700,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+
+  {
+    "id": 1005,
+    "fahrtid": 403,
+    "unfall_zeit": "2025-01-12T08:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 1800,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  },
+  {
+    "id": 1006,
+    "fahrtid": 403,
+    "unfall_zeit": "2025-01-12T15:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 2100,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+
+  {
+    "id": 1007,
+    "fahrtid": 404,
+    "unfall_zeit": "2025-01-13T08:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 400,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+  {
+    "id": 1008,
+    "fahrtid": 404,
+    "unfall_zeit": "2025-01-13T15:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 3600,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+
+  {
+    "id": 1009,
+    "fahrtid": 405,
+    "unfall_zeit": "2025-01-14T08:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 1500,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+  {
+    "id": 1010,
+    "fahrtid": 405,
+    "unfall_zeit": "2025-01-14T15:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 1100,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  },
+
+  {
+    "id": 1011,
+    "fahrtid": 406,
+    "unfall_zeit": "2025-01-15T08:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 2200,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+  {
+    "id": 1012,
+    "fahrtid": 406,
+    "unfall_zeit": "2025-01-15T15:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 500,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+
+  {
+    "id": 1013,
+    "fahrtid": 407,
+    "unfall_zeit": "2025-01-16T08:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 1700,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+  {
+    "id": 1014,
+    "fahrtid": 407,
+    "unfall_zeit": "2025-01-16T15:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 800,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+
+  {
+    "id": 1015,
+    "fahrtid": 408,
+    "unfall_zeit": "2025-01-17T08:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 950,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  },
+  {
+    "id": 1016,
+    "fahrtid": 408,
+    "unfall_zeit": "2025-01-17T15:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 3100,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+
+  {
+    "id": 1017,
+    "fahrtid": 409,
+    "unfall_zeit": "2025-01-18T08:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 200,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+  {
+    "id": 1018,
+    "fahrtid": 409,
+    "unfall_zeit": "2025-01-18T15:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 4000,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+
+  {
+    "id": 1019,
+    "fahrtid": 410,
+    "unfall_zeit": "2025-01-19T08:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 1600,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+  {
+    "id": 1020,
+    "fahrtid": 410,
+    "unfall_zeit": "2025-01-19T15:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 900,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  },
+
+  {
+    "id": 1021,
+    "fahrtid": 411,
+    "unfall_zeit": "2025-01-20T08:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 1350,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+  {
+    "id": 1022,
+    "fahrtid": 411,
+    "unfall_zeit": "2025-01-20T15:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 250,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+
+  {
+    "id": 1023,
+    "fahrtid": 412,
+    "unfall_zeit": "2025-01-21T08:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 2750,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+  {
+    "id": 1024,
+    "fahrtid": 412,
+    "unfall_zeit": "2025-01-21T15:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 1250,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+
+  {
+    "id": 1025,
+    "fahrtid": 413,
+    "unfall_zeit": "2025-01-22T08:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 1450,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  },
+  {
+    "id": 1026,
+    "fahrtid": 413,
+    "unfall_zeit": "2025-01-22T15:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 2300,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+
+  {
+    "id": 1027,
+    "fahrtid": 414,
+    "unfall_zeit": "2025-01-23T08:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 600,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+  {
+    "id": 1028,
+    "fahrtid": 414,
+    "unfall_zeit": "2025-01-23T15:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 3200,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+
+  {
+    "id": 1029,
+    "fahrtid": 415,
+    "unfall_zeit": "2025-01-24T08:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 1300,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+  {
+    "id": 1030,
+    "fahrtid": 415,
+    "unfall_zeit": "2025-01-24T15:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 1850,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  },
+
+  {
+    "id": 1031,
+    "fahrtid": 416,
+    "unfall_zeit": "2025-01-25T08:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 2950,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+  {
+    "id": 1032,
+    "fahrtid": 416,
+    "unfall_zeit": "2025-01-25T15:00:00",
+    "unfall_ort": "Stuttgart",
+    "schaden": 200,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+
+  {
+    "id": 1033,
+    "fahrtid": 417,
+    "unfall_zeit": "2025-01-26T08:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 4100,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+  {
+    "id": 1034,
+    "fahrtid": 417,
+    "unfall_zeit": "2025-01-26T15:00:00",
+    "unfall_ort": "Karlsruhe",
+    "schaden": 950,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+
+  {
+    "id": 1035,
+    "fahrtid": 418,
+    "unfall_zeit": "2025-01-27T08:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 800,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  },
+  {
+    "id": 1036,
+    "fahrtid": 418,
+    "unfall_zeit": "2025-01-27T15:00:00",
+    "unfall_ort": "Mannheim",
+    "schaden": 2800,
+    "unfall_ursache": "Auffahrunfall auf nasser Fahrbahn"
+  },
+
+  {
+    "id": 1037,
+    "fahrtid": 419,
+    "unfall_zeit": "2025-01-28T08:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 650,
+    "unfall_ursache": "Parkrempler mit geringem Schaden"
+  },
+  {
+    "id": 1038,
+    "fahrtid": 419,
+    "unfall_zeit": "2025-01-28T15:00:00",
+    "unfall_ort": "Heilbronn",
+    "schaden": 3700,
+    "unfall_ursache": "Missachtung der Vorfahrt"
+  },
+
+  {
+    "id": 1039,
+    "fahrtid": 420,
+    "unfall_zeit": "2025-01-29T08:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 1950,
+    "unfall_ursache": "Wildunfall bei Dämmerung"
+  },
+  {
+    "id": 1040,
+    "fahrtid": 420,
+    "unfall_zeit": "2025-01-29T15:00:00",
+    "unfall_ort": "Ludwigsburg",
+    "schaden": 600,
+    "unfall_ursache": "Unachtsamer Spurwechsel"
+  }
+]
