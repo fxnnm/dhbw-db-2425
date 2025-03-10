@@ -18,8 +18,9 @@
 - [ ] Eine Stored Procedure zum Hinzufügen einer neuen Fahrt (als SQL codiert) 🔴
 
 
-Mögliche Skripte:
-![grafik](https://github.com/user-attachments/assets/f4dee60f-e9e4-46dd-8090-757077791bf1)
+Mögliche Skriptgestaltung:
+![grafik](https://github.com/user-attachments/assets/91f65873-4036-46ca-bb5a-86627f044b53)
+
 
 
 
