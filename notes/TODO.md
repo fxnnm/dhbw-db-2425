@@ -17,6 +17,8 @@
 - [ ] Änderungen sollen immer persistent in die MySQL-Datenbank geschrieben werden 🔴
 - [ ] Eine Stored Procedure zum Hinzufügen einer neuen Fahrt (als SQL codiert) 🔴
 
+![grafik](https://github.com/user-attachments/assets/f4dee60f-e9e4-46dd-8090-757077791bf1)
+
 
 
      
