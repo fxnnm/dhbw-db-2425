@@ -1,1 +1,300 @@
-f
+/* General button styling */
+.button-style {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 5px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background-color: #007BFF; /* Default blue color */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button-style:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.button-style:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Different colors for specific buttons */
+.button-style.blue {
+    background-color: #007BFF;
+}
+
+.button-style.green {
+    background-color: #28A745;
+}
+
+.button-style.yellow {
+    background-color: #FFC107;
+}
+
+/* Gray button styling */
+.button-style.gray {
+    background-color: #6c757d; /* Gray color */
+    color: white; /* White text */
+}
+
+.button-style.gray:hover {
+    background-color: #5a6268; /* Darker gray on hover */
+}
+
+
+/* Styling dropdown (select) to look like a button */
+select.button-style {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 10px 15px;
+    background-color: #007BFF; /* Match button color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    text-align-last: center; /* For alignment */
+}
+
+select.button-style:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Table Styling */
+.styled-table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 18px;
+    font-family: Arial, sans-serif;
+    width: 100%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: #007BFF; /* Blue header */
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+.styled-table tbody tr {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f9f9f9;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.pagination-controls a {
+    text-decoration: none;
+    margin: 5px;
+}
+
+/* Back Link Styling */
+a.button-style {
+    text-decoration: none;
+    padding: 10px 15px;
+    margin: 5px;
+    display: inline-block;
+    color: white;
+    background-color: #6c757d; /* Gray */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+}
+
+a.button-style:hover {
+    background-color: #5a6268; /* Darker gray */
+}
+/* Center content with spacing */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+/* Styling for the action buttons */
+.action-buttons {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Dropdown and submit button container */
+.dropdown-container {
+    margin-top: 20px;
+}
+
+/* General button styling */
+.button-style {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 16px;
+    text-align: center;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button-style:hover {
+    opacity: 0.9;
+}
+
+.button-style:focus {
+    outline: none;
+}
+
+/* Blue button */
+.button-style.blue {
+    background-color: #007BFF;
+}
+
+.button-style.blue:hover {
+    background-color: #0056b3;
+}
+
+/* Green button */
+.button-style.green {
+    background-color: #28A745;
+}
+
+.button-style.green:hover {
+    background-color: #218838;
+}
+
+/* Yellow button */
+.button-style.yellow {
+    background-color: #FFC107;
+    color: black;
+}
+
+.button-style.yellow:hover {
+    background-color: #e0a800;
+}
+
+/* Gray button and dropdown */
+.button-style.gray {
+    background-color: #6c757d;
+}
+
+.button-style.gray:hover {
+    background-color: #5a6268;
+}
+/* Center content with spacing */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+/* Styling for the action buttons */
+.action-buttons {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* Dropdown and submit button container */
+.dropdown-container {
+    margin-top: 20px;
+}
+
+/* Table Styling */
+.styled-table {
+    border-collapse: collapse;
+    margin: 20px auto;
+    font-size: 16px;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.styled-table thead tr {
+    background-color: #007BFF; /* Blue header */
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+}
+
+.styled-table tbody tr {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f9f9f9;
+}
+
+.styled-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.pagination-controls a {
+    text-decoration: none;
+    margin: 5px;
+}
+
+ul {
+    list-style-type: none;
+    font-family: Arial, sans-serif;
+}
+
+ul li:before {
+    content: "📂 ";
+    font-size: 1.2em;
+    color: #007bff;
+}
+
+ul li ul li:before {
+    content: "📄 ";
+    font-size: 1.1em;
+    color: #6c757d;
+}
+
+ul ul {
+    margin-left: 20px;
+}
+
