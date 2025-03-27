@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  dhbwdb2425:
+    image: dhbwdb2425
+    build:
+      context: .
+      dockerfile: ./Dockerfile
