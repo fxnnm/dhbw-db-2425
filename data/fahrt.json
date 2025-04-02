@@ -1,0 +1,118 @@
+{
+  "_id": {
+    "$oid": "67dbce0fd3456b3b2569fa3d"
+  },
+  "id": 1,
+  "fahrzeugid": 4,
+  "geraetid": 120,
+  "startzeitpunkt": {
+    "$date": "2024-01-01T00:00:00.000Z"
+  },
+  "endzeitpunkt": {
+    "$date": "2024-01-01T00:00:00.000Z"
+  },
+  "route": "Route 14",
+  "fahrzeug": {
+    "id": 4,
+    "hersteller": "Audi",
+    "modell": "A4",
+    "baujahr": 2017
+  },
+  "geraet": {
+    "id": 120,
+    "fahrzeugid": 2,
+    "geraet_typ": "Recorder",
+    "hersteller": "Sony",
+    "modell": "R-401"
+  },
+  "fahrer": [
+    {
+      "id": 1,
+      "vorname": "Karsten",
+      "nachname": "dumichauch",
+      "geburtsdatum": {
+        "$date": {
+          "$numberLong": "-470016000000"
+        }
+      },
+      "kontakt_nr": "0123456789",
+      "email": "kessler@dhbw-stuttgart.de"
+    }
+  ],
+  "fahrzeugparameter": [
+    {
+      "id": 29960,
+      "fahrtid": 1,
+      "zeitstempel": {
+        "$date": "2024-01-01T00:00:00.000Z"
+      },
+      "geschwindigkeit": 144.68,
+      "motortemperatur": 88.9,
+      "luftmassenstrom": 82.46,
+      "batterie": 10.61
+    }
+  ],
+  "beschleunigung": [
+    {
+      "id": 29960,
+      "fahrtid": 1,
+      "zeitstempel": {
+        "$date": "2024-01-01T00:00:00.000Z"
+      },
+      "x_achse": 1.6,
+      "y_achse": 0.47,
+      "z_achse": 2.56
+    }
+  ],
+  "diagnose": [
+    {
+      "id": 29960,
+      "fahrtid": 1,
+      "zeitstempel": {
+        "$date": "2024-01-01T00:00:00.000Z"
+      },
+      "fehlercode": "E0345",
+      "beschreibung": "Kritischer Fehler 7"
+    }
+  ],
+  "wartung": [
+    {
+      "id": 5,
+      "fahrzeugid": 4,
+      "datum": {
+        "$date": "2024-07-01T00:00:00.000Z"
+      },
+      "beschreibung": "Batterie ersetzt"
+    },
+    {
+      "id": 15,
+      "fahrzeugid": 4,
+      "datum": {
+        "$date": "2024-10-18T00:00:00.000Z"
+      },
+      "beschreibung": "Lichtmaschine ersetzt"
+    }
+  ],
+  "geraet_installation": [
+    {
+      "id": 4,
+      "geraetid": 104,
+      "fahrzeugid": 4,
+      "einbau_datum": {
+        "$date": "2023-09-01T00:00:00.000Z"
+      },
+      "ausbau_datum": {
+        "$date": "2024-03-01T00:00:00.000Z"
+      }
+    },
+    {
+      "id": 14,
+      "geraetid": 114,
+      "fahrzeugid": 4,
+      "einbau_datum": {
+        "$date": "2024-06-01T00:00:00.000Z"
+      },
+      "ausbau_datum": null
+    }
+  ]
+}
