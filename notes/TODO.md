@@ -10,8 +10,8 @@
 - [ ] Lauffähige App erstellen (Programmrumpf ergänzen) 🔴
 - [ ] Konvertierung der Tabellen nach MongoDB, einzeln und als embedded Collection (SQL und/oder Python)
 - [ ] Logging von Konvertierungen soll in eine Log-Tabelle geschrieben werden (als SQL codiert) 🔴
-- [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für alle Fahrten im März 2024 (als SQL codiert, Datum bzgl. Fahrt) 🔴
-- [ ] Report 2: Alle Fahrer finden, die innerhalb der letzten 15 Monate eine Fahrt durchgeführt haben (als SQL codiert) 🔴
+- [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für alle Fahrten pro Fahrer im März 2024 (als SQL codiert, Datum bzgl. Fahrt) 🔴
+- [ ] Report 2: Alle Fahrer finden, die innerhalb der letzten 15 Monate eine Fahrt durchgeführt haben (als SQL codiert, evtl. 15 Monate anpassen) 🔴
 - [ ] Report 3: Die höchste jemals gemessene Geschwindigkeit für jeden Fahrer (als SQL codiert) 🔴
 - [ ] Hinzufügen der Collection unfall.json in MongoDB 🔴
 - [ ] Editieren der MySQL-Tabellen soll in eine Changelog-Tabelle getriggert werden (als SQL codiert) 🔴
