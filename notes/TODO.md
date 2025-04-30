@@ -5,8 +5,8 @@
 - [x] SQL-Skripte zur Erstellung des DB-Schemas (lauffähig für MySQL) 🔴
 
 ## Teil 2 ➡️
-- [ ] Import aller Daten in das MySQL-Schema, evtl. Datenbereinigung (über SQL/MySQL) 🔴
-- [ ] Alle Importe innerhalb von Transaktionen 🔴
+- [x] Import aller Daten in das MySQL-Schema, evtl. Datenbereinigung (über SQL/MySQL) 🔴
+- [x] Alle Importe innerhalb von Transaktionen 🔴
 - [ ] Lauffähige App erstellen (Programmrumpf ergänzen) 🔴
 - [ ] Konvertierung der Tabellen nach MongoDB, einzeln und als embedded Collection (SQL und/oder Python)
 - [ ] Logging von Konvertierungen soll in eine Log-Tabelle geschrieben werden (als SQL codiert) 🔴
