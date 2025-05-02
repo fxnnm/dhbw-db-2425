@@ -131,3 +131,12 @@ CREATE TABLE geraet_installation (
     CONSTRAINT fk_gi_geraet FOREIGN KEY (geraetid) REFERENCES geraet(id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_gi_fahrzeug FOREIGN KEY (fahrzeugid) REFERENCES fahrzeug(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
+
+-- Tabelle 12: konvertierung_log (für Logging aus convert.py)
+CREATE TABLE konvertierung_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tabelle VARCHAR(255),
+    anzahl INT,
+    zeitstempel TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
