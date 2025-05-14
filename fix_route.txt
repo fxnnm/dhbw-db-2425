@@ -1,0 +1,5 @@
+# Count query in view_table function
+count_query = text(f"SELECT COUNT(*) FROM {selected_table}")
+
+# Update query in update_row function
+query = f"UPDATE {table_name} SET {set_clause} WHERE id = %s"

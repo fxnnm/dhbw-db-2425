@@ -33,11 +33,11 @@ def insert_message_to_mysql(message, duration):
     Inserts a success or error message into the 'success_logs' table in MySQL.
     """
     try:
-
         conn = get_mysql_connection()
         cursor = conn.cursor()
         query = """
-            ERGAENZEN
+            INSERT INTO success_logs (message, duration) 
+            VALUES (%s, %s)
         """
         cursor.execute(query, (message, duration))
         conn.commit()
@@ -110,7 +110,64 @@ def convert_to_mongodb(selected_tables, embed=True):
 
     total_inserted = 0
 
-    ERGAENZEN
+    # If embed is True, create a single embedded collection
+    if embed:
+        # Create a new collection for the embedded data
+        embedded_collection = db['embedded']
+        
+        # Loop through each table and get data
+        for table_name in selected_tables:
+            if table_name not in meta.tables:
+                print(f"Table {table_name} not found. Skipping.")
+                continue
+                
+            table = meta.tables[table_name]
+            query = table.select()
+            result = session.execute(query)
+            rows = [dict(row) for row in result]
+            
+            # Fix date objects for MongoDB compatibility
+            rows = [fix_dates(row) for row in rows]
+            
+            # Add table_name as a field to identify the source table
+            for row in rows:
+                row['source_table'] = table_name
+            
+            # Insert all rows in one batch
+            if rows:
+                try:
+                    embedded_collection.insert_many(rows)
+                    total_inserted += len(rows)
+                    print(f"Inserted {len(rows)} rows from {table_name} into embedded collection.")
+                except Exception as e:
+                    print(f"Error inserting {table_name} data: {e}")
+    else:
+        # Create separate collections for each table
+        for table_name in selected_tables:
+            if table_name not in meta.tables:
+                print(f"Table {table_name} not found. Skipping.")
+                continue
+                
+            table = meta.tables[table_name]
+            query = table.select()
+            result = session.execute(query)
+            rows = [dict(row) for row in result]
+            
+            # Fix date objects for MongoDB compatibility
+            rows = [fix_dates(row) for row in rows]
+            
+            # Create or clear collection
+            collection = db[table_name]
+            collection.delete_many({})  # Clear existing data
+            
+            # Insert all rows in one batch
+            if rows:
+                try:
+                    collection.insert_many(rows)
+                    total_inserted += len(rows)
+                    print(f"Inserted {len(rows)} rows into {table_name} collection.")
+                except Exception as e:
+                    print(f"Error inserting {table_name} data: {e}")
 
     session.close()
     print("Conversion completed.")

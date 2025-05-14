@@ -17,6 +17,10 @@ load_dotenv()
 app = Flask(__name__, template_folder='web/templates', static_folder="static")
 app.secret_key = os.getenv("SECRET_KEY")
 
+# Ensure SECRET_KEY is set
+if not app.secret_key:
+    raise ValueError("SECRET_KEY environment variable is not set.")
+
 # -----------------------------------------------------------------------------
 # Logging Setup
 # -----------------------------------------------------------------------------
@@ -58,10 +62,17 @@ try:
 except Exception as e:
     logger.error("Fehler beim Erstellen der Tabellen: %s", e)
 
+# Add a default route for health check
+@app.route('/')
+def health_check():
+    return {"status": "App is running"}, 200
+
+# Conditional debug mode based on environment variable
+debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 
 # -----------------------------------------------------------------------------
 # Main Entrypoint
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=debug_mode)
 
