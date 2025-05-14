@@ -7,7 +7,7 @@
 ## Teil 2 ➡️
 - [x] Import aller Daten in das MySQL-Schema, evtl. Datenbereinigung (über SQL/MySQL) 🔴
 - [x] Alle Importe innerhalb von Transaktionen 🔴
-- [ ] Lauffähige App erstellen (Programmrumpf ergänzen) 🔴
+- [x] Lauffähige App erstellen (Programmrumpf ergänzen) 🔴
 - [x] Konvertierung der Tabellen nach MongoDB, einzeln und als embedded Collection (SQL und/oder Python)
 - [x] Logging von Konvertierungen soll in eine Log-Tabelle geschrieben werden (als SQL codiert) 🔴
 - [ ] Report 1: Durchschnittliche Geschwindigkeit und Motortemperatur für alle Fahrten pro Fahrer im März 2024 (als SQL codiert, Datum bzgl. Fahrt) 🔴
