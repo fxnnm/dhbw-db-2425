@@ -1,219 +1,152 @@
--- file: 03_import_data.sql
 -- Skript für Daten-Import, Bereinigung sowie Integritäts- und Plausibilitätsprüfungen in MySQL
 
--- 1. Import-Log-Tabelle (pro Lauf Einträge zu Fehlern/Erfolgen)
-CREATE TABLE IF NOT EXISTS import_log (
-  id               INT AUTO_INCREMENT PRIMARY KEY,
-  run_timestamp    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  file_name        VARCHAR(255)  NOT NULL,
-  row_number       INT           NULL,
-  error_message    TEXT          NULL,
-  status           ENUM('OK','ERROR') NOT NULL DEFAULT 'OK'
-) ENGINE=InnoDB;
+-- Temporarily disable foreign key checks for performance
+SET FOREIGN_KEY_CHECKS = 0;
+START TRANSACTION;
 
--- 2. Stored Procedure für den Import und Prüfungen
-DELIMITER $$
-DROP PROCEDURE IF EXISTS import_data$$
-CREATE PROCEDURE import_data()
-BEGIN
-  DECLARE v_err TEXT;
+-- 1. Fahrzeug
+LOAD DATA LOCAL INFILE 'data/01_fahrzeug.csv'
+INTO TABLE fahrzeug_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, hersteller, modell, baujahr);
+INSERT INTO fahrzeug (id, hersteller, modell, baujahr)
+SELECT DISTINCT id, TRIM(hersteller), TRIM(modell), baujahr FROM fahrzeug_stg
+ON DUPLICATE KEY UPDATE
+hersteller = VALUES(hersteller),
+modell = VALUES(modell),
+baujahr = VALUES(baujahr);
 
-  -- Fehler-Handler: Rollback, Log-Eintrag und Fehlermeldung weitergeben
-  DECLARE EXIT HANDLER FOR SQLEXCEPTION
-  BEGIN
-    GET DIAGNOSTICS CONDITION 1 v_err = MESSAGE_TEXT;
-    ROLLBACK;
-    INSERT INTO import_log(file_name, row_number, error_message, status)
-      VALUES('unknown', NULL, v_err, 'ERROR');
-    RESIGNAL;
-  END;
+-- 2. Fahrer
+LOAD DATA LOCAL INFILE 'data/02_fahrer.csv'
+INTO TABLE fahrer_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, vorname, nachname, geburtsdatum, kontakt_nr, email);
+UPDATE fahrer_stg
+SET geburtsdatum = STR_TO_DATE(geburtsdatum, '%Y-%m-%d')
+WHERE geburtsdatum REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$';
+INSERT INTO fahrer (id, vorname, nachname, geburtsdatum, kontakt_nr, email)
+SELECT DISTINCT id, TRIM(vorname), TRIM(nachname), geburtsdatum, TRIM(kontakt_nr), TRIM(email)
+FROM fahrer_stg
+WHERE geburtsdatum IS NOT NULL AND geburtsdatum REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$';
 
-  -- FK-Prüfungen temporär ausschalten für Performance
-  SET FOREIGN_KEY_CHECKS = 0;
-  START TRANSACTION;
+-- 3. Fahrer-Fahrzeug Zuordnung
+LOAD DATA LOCAL INFILE 'data/03_fahrer_fahrzeug.csv'
+INTO TABLE fahrer_fahrzeug_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(fahrerid, fahrzeugid, gueltig_ab, gueltig_bis);
+UPDATE fahrer_fahrzeug_stg
+SET gueltig_ab = STR_TO_DATE(gueltig_ab, '%Y-%m-%d'),
+    gueltig_bis = CASE
+        WHEN gueltig_bis IS NOT NULL AND gueltig_bis REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+        THEN STR_TO_DATE(gueltig_bis, '%Y-%m-%d')
+        ELSE NULL
+    END
+WHERE gueltig_ab REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}$';
+INSERT INTO fahrer_fahrzeug (fahrerid, fahrzeugid, gueltig_ab, gueltig_bis)
+SELECT DISTINCT fahrerid, fahrzeugid, gueltig_ab, gueltig_bis FROM fahrer_fahrzeug_stg;
 
-  -- ****************************************************************
-  -- Bulk-Import & Bereinigung für jede Tabelle
-  -- ****************************************************************
+-- 4. Gerät
+LOAD DATA LOCAL INFILE 'data/04_geraet.csv'
+INTO TABLE geraet_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, fahrzeugid, geraet_typ, hersteller, modell);
+INSERT INTO geraet (id, fahrzeugid, geraet_typ, hersteller, modell)
+SELECT DISTINCT id, fahrzeugid, TRIM(geraet_typ), TRIM(hersteller), TRIM(modell) FROM geraet_stg;
 
-  -- 1. Fahrzeug
-  -- Lade Rohdaten unverändert in Staging
-  LOAD DATA LOCAL INFILE 'data/01_fahrzeug.csv'
-    INTO TABLE fahrzeug_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, kennzeichen, hersteller, baujahr);
-  -- Datenbereinigung: Kennzeichen einheitlich (Großbuchstaben, keine Leerzeichen)
-  UPDATE fahrzeug_stg
-    SET kennzeichen = UPPER(TRIM(kennzeichen));
-  -- Übertragen in Zieltabelle mit Upsert
-  INSERT INTO fahrzeug(id, kennzeichen, hersteller, baujahr)
-    SELECT DISTINCT id, kennzeichen, hersteller, baujahr FROM fahrzeug_stg
-    ON DUPLICATE KEY UPDATE
-      kennzeichen = VALUES(kennzeichen),
-      hersteller  = VALUES(hersteller),
-      baujahr     = VALUES(baujahr);
-  INSERT INTO import_log(file_name, status) VALUES('01_fahrzeug.csv','OK');
+-- 5. Fahrt
+LOAD DATA LOCAL INFILE 'data/05_fahrt.csv'
+INTO TABLE fahrt_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, fahrzeugid, geraetid, startzeit, endzeit, route);
+UPDATE fahrt_stg
+SET startzeit = STR_TO_DATE(startzeit, '%Y-%m-%d %H:%i:%s'),
+    endzeit = STR_TO_DATE(endzeit, '%Y-%m-%d %H:%i:%s');
+INSERT INTO fahrt (id, fahrzeugid, geraetid, startzeitpunkt, endzeitpunkt, route)
+SELECT DISTINCT id, fahrzeugid, geraetid, startzeit, endzeit, TRIM(route)
+FROM fahrt_stg
+WHERE fahrzeugid IS NOT NULL;  -- Exclude rows with NULL 'fahrzeugid'
 
-  -- 2. Fahrer (analog zu Fahrzeug)
-  LOAD DATA LOCAL INFILE 'data/02_fahrer.csv'
-    INTO TABLE fahrer_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, vorname, nachname, geburtsdatum);
-  UPDATE fahrer_stg
-    SET vorname = TRIM(vorname),
-        nachname = TRIM(nachname),
-        geburtsdatum = STR_TO_DATE(geburtsdatum, '%Y-%m-%d');
-  INSERT INTO fahrer(id, vorname, nachname, geburtsdatum)
-    SELECT DISTINCT id, vorname, nachname, geburtsdatum FROM fahrer_stg
-    ON DUPLICATE KEY UPDATE
-      vorname      = VALUES(vorname),
-      nachname     = VALUES(nachname),
-      geburtsdatum = VALUES(geburtsdatum);
-  INSERT INTO import_log(file_name, status) VALUES('02_fahrer.csv','OK');
+-- 6. Fahrt-Fahrer Zuordnung
+LOAD DATA LOCAL INFILE 'data/06_fahrt_fahrer.csv'
+INTO TABLE fahrt_fahrer_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(fahrtid, fahrerid);
+INSERT INTO fahrt_fahrer (fahrtid, fahrerid)
+SELECT DISTINCT fahrtid, fahrerid FROM fahrt_fahrer_stg;
 
-  -- 3. Fahrer-Fahrzeug Zuordnung
-  LOAD DATA LOCAL INFILE 'data/03_fahrer_fahrzeug.csv'
-    INTO TABLE fahrer_fahrzeug_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (fahrer_id, fahrzeug_id);
-  INSERT INTO fahrer_fahrzeug(fahrer_id, fahrzeug_id)
-    SELECT DISTINCT fahrer_id, fahrzeug_id FROM fahrer_fahrzeug_stg
-    ON DUPLICATE KEY UPDATE fahrer_id = VALUES(fahrer_id);
-  INSERT INTO import_log(file_name, status) VALUES('03_fahrer_fahrzeug.csv','OK');
+-- 7. Fahrzeugparameter
+LOAD DATA LOCAL INFILE 'data/07_fahrzeugparameter.csv'
+INTO TABLE fahrzeugparameter_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, fahrtid, zeitstempel, geschwindigkeit, motortemperatur, luftmassenstrom, batterie);
+UPDATE fahrzeugparameter_stg
+SET zeitstempel = STR_TO_DATE(REPLACE(zeitstempel, '"', ''), '%Y-%m-%d %H:%i:%s');
+INSERT INTO fahrzeugparameter (id, fahrtid, zeitstempel, geschwindigkeit, motortemperatur, luftmassenstrom, batterie)
+SELECT DISTINCT id, fahrtid, zeitstempel, geschwindigkeit, motortemperatur, luftmassenstrom, batterie FROM fahrzeugparameter_stg;
 
-  -- 4. Gerät
-  LOAD DATA LOCAL INFILE 'data/04_geraet.csv'
-    INTO TABLE geraet_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, typ, firmware_version);
-  INSERT INTO geraet(id, typ, firmware_version)
-    SELECT DISTINCT id, typ, firmware_version FROM geraet_stg
-    ON DUPLICATE KEY UPDATE
-      typ              = VALUES(typ),
-      firmware_version = VALUES(firmware_version);
-  INSERT INTO import_log(file_name, status) VALUES('04_geraet.csv','OK');
+-- 8. Beschleunigung
+LOAD DATA LOCAL INFILE 'data/08_beschleunigung.csv'
+INTO TABLE beschleunigung_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, fahrtid, zeitstempel, x_achse, y_achse, z_achse);
+UPDATE beschleunigung_stg
+SET zeitstempel = STR_TO_DATE(REPLACE(zeitstempel, '"', ''), '%Y-%m-%d %H:%i:%s');
+INSERT INTO beschleunigung (id, fahrtid, zeitstempel, x_achse, y_achse, z_achse)
+SELECT DISTINCT id, fahrtid, zeitstempel, x_achse, y_achse, z_achse FROM beschleunigung_stg;
 
-  -- 5. Fahrt
-  LOAD DATA LOCAL INFILE 'data/05_fahrt.csv'
-    INTO TABLE fahrt_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, fahrzeug_id, startzeit, endzeit, distanz);
-  UPDATE fahrt_stg
-    SET startzeit = STR_TO_DATE(startzeit, '%Y-%m-%d %H:%i:%s'),
-        endzeit   = STR_TO_DATE(endzeit,   '%Y-%m-%d %H:%i:%s');
-  INSERT INTO fahrt(id, fahrzeug_id, startzeit, endzeit, distanz)
-    SELECT DISTINCT id, fahrzeug_id, startzeit, endzeit, distanz FROM fahrt_stg
-    ON DUPLICATE KEY UPDATE
-      startzeit = VALUES(startzeit),
-      endzeit   = VALUES(endzeit),
-      distanz   = VALUES(distanz);
-  INSERT INTO import_log(file_name, status) VALUES('05_fahrt.csv','OK');
+-- 9. Diagnose
+LOAD DATA LOCAL INFILE 'data/09_diagnose.csv'
+INTO TABLE diagnose_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, fahrtid, zeitstempel, fehlercode, beschreibung);
+UPDATE diagnose_stg
+SET zeitstempel = STR_TO_DATE(REPLACE(zeitstempel, '"', ''), '%Y-%m-%d %H:%i:%s');
+INSERT INTO diagnose (id, fahrtid, zeitstempel, fehlercode, beschreibung)
+SELECT DISTINCT id, fahrtid, zeitstempel, TRIM(fehlercode), TRIM(beschreibung) FROM diagnose_stg;
 
-  -- 6. Fahrt-Fahrer Zuordnung
-  LOAD DATA LOCAL INFILE 'data/06_fahrt_fahrer.csv'
-    INTO TABLE fahrt_fahrer_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (fahrt_id, fahrer_id);
-  INSERT INTO fahrt_fahrer(fahrt_id, fahrer_id)
-    SELECT DISTINCT fahrt_id, fahrer_id FROM fahrt_fahrer_stg
-    ON DUPLICATE KEY UPDATE fahrt_id = VALUES(fahrt_id);
-  INSERT INTO import_log(file_name, status) VALUES('06_fahrt_fahrer.csv','OK');
+-- 10. Wartung
+LOAD DATA LOCAL INFILE 'data/10_wartung.csv'
+INTO TABLE wartung_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, fahrzeugid, datum, beschreibung);
+UPDATE wartung_stg
+SET datum = STR_TO_DATE(DATE(REPLACE(datum, '"', '')), '%Y-%m-%d');
+INSERT INTO wartung (id, fahrzeugid, datum, beschreibung)
+SELECT DISTINCT id, fahrzeugid, datum, TRIM(beschreibung) FROM wartung_stg;
 
-  -- 7. Fahrzeugparameter
-  LOAD DATA LOCAL INFILE 'data/07_fahrzeugparameter.csv'
-    INTO TABLE fahrzeugparameter_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (fahrzeug_id, parameter_name, parameter_wert);
-  INSERT INTO fahrzeugparameter(fahrzeug_id, parameter_name, parameter_wert)
-    SELECT DISTINCT fahrzeug_id, parameter_name, parameter_wert FROM fahrzeugparameter_stg
-    ON DUPLICATE KEY UPDATE parameter_wert = VALUES(parameter_wert);
-  INSERT INTO import_log(file_name, status) VALUES('07_fahrzeugparameter.csv','OK');
+-- 11. Gerät-Installation
+LOAD DATA LOCAL INFILE 'data/11_geraet_installation.csv'
+INTO TABLE geraet_installation_stg
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(id, geraetid, fahrzeugid, einbau_datum, ausbau_datum);
+UPDATE geraet_installation_stg
+SET einbau_datum = STR_TO_DATE(NULLIF(einbau_datum, 'NULL\r'), '%Y-%m-%d'),
+    ausbau_datum = STR_TO_DATE(NULLIF(ausbau_datum, 'NULL\r'), '%Y-%m-%d');
+INSERT INTO geraet_installation (id, geraetid, fahrzeugid, einbau_datum, ausbau_datum)
+SELECT DISTINCT id, geraetid, fahrzeugid, einbau_datum, ausbau_datum FROM geraet_installation_stg;
 
-  -- 8. Beschleunigung
-  LOAD DATA LOCAL INFILE 'data/08_beschleunigung.csv'
-    INTO TABLE beschleunigung_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, fahrt_id, zeitstempel, wert);
-  UPDATE beschleunigung_stg
-    SET zeitstempel = STR_TO_DATE(zeitstempel, '%Y-%m-%d %H:%i:%s');
-  INSERT INTO beschleunigung(id, fahrt_id, zeitstempel, wert)
-    SELECT DISTINCT id, fahrt_id, zeitstempel, wert FROM beschleunigung_stg
-    ON DUPLICATE KEY UPDATE wert = VALUES(wert);
-  INSERT INTO import_log(file_name, status) VALUES('08_beschleunigung.csv','OK');
-
-  -- 9. Diagnose
-  LOAD DATA LOCAL INFILE 'data/09_diagnose.csv'
-    INTO TABLE diagnose_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, geraet_id, code, beschreibung);
-  INSERT INTO diagnose(id, geraet_id, code, beschreibung)
-    SELECT DISTINCT id, geraet_id, code, beschreibung FROM diagnose_stg
-    ON DUPLICATE KEY UPDATE beschreibung = VALUES(beschreibung);
-  INSERT INTO import_log(file_name, status) VALUES('09_diagnose.csv','OK');
-
-  -- 10. Wartung
-  LOAD DATA LOCAL INFILE 'data/10_wartung.csv'
-    INTO TABLE wartung_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, geraet_id, datum, typ);
-  UPDATE wartung_stg
-    SET datum = STR_TO_DATE(datum, '%Y-%m-%d');
-  INSERT INTO wartung(id, geraet_id, datum, typ)
-    SELECT DISTINCT id, geraet_id, datum, typ FROM wartung_stg
-    ON DUPLICATE KEY UPDATE typ = VALUES(typ);
-  INSERT INTO import_log(file_name, status) VALUES('10_wartung.csv','OK');
-
-  -- 11. Gerät-Installation
-  LOAD DATA LOCAL INFILE 'data/11_geraet_installation.csv'
-    INTO TABLE geraet_installation_stg
-    FIELDS TERMINATED BY ';' ENCLOSED BY '"' IGNORE 1 ROWS
-    (id, geraet_id, fahrzeug_id, install_datum);
-  UPDATE geraet_installation_stg
-    SET install_datum = STR_TO_DATE(install_datum, '%Y-%m-%d');
-  INSERT INTO geraet_installation(id, geraet_id, fahrzeug_id, install_datum)
-    SELECT DISTINCT id, geraet_id, fahrzeug_id, install_datum FROM geraet_installation_stg
-    ON DUPLICATE KEY UPDATE install_datum = VALUES(install_datum);
-  INSERT INTO import_log(file_name, status) VALUES('11_geraet_installation.csv','OK');
-
-  -- ****************************************************************
-  -- 5. Integritäts- und Plausibilitätsprüfungen
-  -- ****************************************************************
-
-  -- 5.1. Zeilenanzahl prüfen: Staging vs. Ziel
-  -- Beispiel für 'fahrzeug'
-  SELECT COUNT(*) INTO @cnt_stg FROM fahrzeug_stg;
-  SELECT COUNT(*) INTO @cnt_tgt FROM fahrzeug;
-  IF @cnt_stg <> @cnt_tgt THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = CONCAT('Row count mismatch (fahrzeug): staging=', @cnt_stg, ', target=', @cnt_tgt);
-  END IF;
-
-  -- 5.2. Fremdschlüssel prüfen: keine Waisen
-  -- Beispiel für fahrer_fahrzeug
-  SELECT COUNT(*) INTO @orph_fg
-    FROM fahrer_fahrzeug f
-    LEFT JOIN fahrer r ON f.fahrer_id = r.id
-    WHERE r.id IS NULL;
-  IF @orph_fg > 0 THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = CONCAT('Orphan FK in fahrer_fahrzeug: ', @orph_fg, ' rows');
-  END IF;
-
-  -- 5.3. Domänen-Prüfungen: Wertebereiche
-  -- Beispiel für fahrt.distanz (0–10000 km)
-  SELECT COUNT(*) INTO @inv_dist FROM fahrt WHERE distanz < 0 OR distanz > 10000;
-  IF @inv_dist > 0 THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = CONCAT('Invalid distanz in fahrt: ', @inv_dist, ' rows');
-  END IF;
-
-  -- 5.4. Optional: Weitere Prüfungen hier einfügen (Messwertbereiche, Datumslogik etc.)
-
-  -- Commit und Constraints wieder aktivieren
-  COMMIT;
-  SET FOREIGN_KEY_CHECKS = 1;
-END$$
-DELIMITER ;
-
--- Aufruf der Import-Prozedur
-CALL import_data();
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+COMMIT;
