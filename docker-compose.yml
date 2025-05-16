@@ -24,6 +24,7 @@ services:
       - mysql-data:/var/lib/mysql
       - ./my.cnf:/etc/mysql/my.cnf
       - ./data:/var/lib/mysql-files/
+    command: --local-infile=1
 
 volumes:
   mongo-data:
