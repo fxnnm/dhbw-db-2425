@@ -101,6 +101,25 @@ try:
 except Exception as e:
     logger.error(f"Error executing import script on startup: {e}")
 
+# Automatically execute the 03_reports.sql script on app startup
+try:
+    logger.info("MySQL DB: %s", os.getenv("MYSQL_DB_NAME"))
+    logger.info("MySQL USER: %s", os.getenv("MYSQL_USER"))
+    logger.info("MySQL HOST: %s", os.getenv("MYSQL_HOST"))
+
+    sql_file_path = os.path.join(os.path.dirname(__file__), "03_reports.sql")
+
+    if not os.path.exists(sql_file_path):
+        logger.warning("Report file not found: 03_reports.sql")
+    else:
+        with open(sql_file_path, "r", encoding="utf-8") as file:
+            sql_script = file.read()
+
+        # Check if it's only SELECT statements (not required to execute at startup)
+        logger.info("Report file 03_reports.sql loaded for reference.")
+except Exception as e:
+    logger.error(f"Error loading report file: {e}")
+
 # Add a default route for health check
 @app.route('/')
 def health_check():
