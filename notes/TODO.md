@@ -14,8 +14,8 @@
 - [x] Report 2: Alle Fahrer finden, die innerhalb der letzten 15 Monate eine Fahrt durchgeführt haben (als SQL codiert, evtl. 15 Monate anpassen) 🔴
 - [x] Report 3: Die höchste jemals gemessene Geschwindigkeit für jeden Fahrer (als SQL codiert) 🔴
 - [x] Hinzufügen der Collection unfall.json in MongoDB 🔴
-- [ ] Editieren der MySQL-Tabellen soll in eine Changelog-Tabelle getriggert werden (als SQL codiert) 🔴
-- [ ] Eine Stored Procedure zum Hinzufügen einer neuen Fahrt (als SQL codiert) 🔴
+- [x] Editieren der MySQL-Tabellen soll in eine Changelog-Tabelle getriggert werden (als SQL codiert) 🔴
+- [x] Eine Stored Procedure zum Hinzufügen einer neuen Fahrt (als SQL codiert) 🔴
 - [ ] Änderungen sollen immer persistent in die MySQL-Datenbank geschrieben werden 🔴
 
 

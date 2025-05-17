@@ -36,6 +36,52 @@
 
     <h1 class="mb-4">Tabelle: {{ table_name }}</h1>
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if table_name == 'fahrt' %}
+    <div class="card mb-4">
+      <div class="card-header">Neue Fahrt hinzufügen</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('add_fahrt_route') }}">
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Fahrzeug ID</label>
+              <input type="number" name="fahrzeugid" class="form-control" required>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Gerät ID</label>
+              <input type="number" name="geraetid" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Startzeit</label>
+              <input type="datetime-local" name="startzeitpunkt" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Endzeit</label>
+              <input type="datetime-local" name="endzeitpunkt" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Route</label>
+              <input type="text" name="route" class="form-control" required>
+            </div>
+          </div>
+          <div class="mt-3">
+            <button type="submit" class="btn btn-primary">Hinzufügen</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
     {% if rows %}
       <!-- Use Bootstrap table classes for nicer styling -->
       <div class="table-responsive">

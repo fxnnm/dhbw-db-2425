@@ -368,3 +368,29 @@ def register_routes(app):
 
         return redirect(url_for('view_table', selected_table=table_name))
 
+    @app.route('/add-fahrt', methods=['POST'])
+    def add_fahrt_route():
+        from infrastructure.database.helpers.helpers import get_mysql_connection
+        conn = get_mysql_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.callproc(
+                'addFahrt',
+                [
+                    request.form.get('fahrzeugid'),
+                    request.form.get('geraetid'),
+                    request.form.get('startzeitpunkt'),
+                    request.form.get('endzeitpunkt'),
+                    request.form.get('route')
+                ]
+            )
+            conn.commit()
+            cursor.close()
+            flash("Sucessfully created new entry in table 'fahrt'", "success")
+        except Exception as e:
+            print("Error while trying to create new entry in table 'fahrt':", e)
+            flash(f"Error while creating new entry: {str(e)}", "danger")
+        finally:
+            conn.close()
+
+        return redirect(url_for('view_table', selected_table='fahrt'))
