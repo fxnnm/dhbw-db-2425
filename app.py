@@ -120,6 +120,32 @@ try:
 except Exception as e:
     logger.error(f"Error loading report file: {e}")
 
+# Automatically setup trigger from script 04_trigger.sql
+try:
+    trigger_file_path = os.path.join(os.path.dirname(__file__), "04_trigger.sql")
+
+    if os.path.exists(trigger_file_path):
+        with open(trigger_file_path, "r", encoding="utf-8") as file:
+            sql_script = file.read()
+
+        # Triggers have to be correctly replaced with DELIMITER $$ ... $$ DELIMITER ;
+        statements = sql_script.replace("DELIMITER $$", "").replace("DELIMITER ;", "").split("$$")
+
+        with mysql_engine.begin() as conn:
+            for stmt in statements:
+                stmt = stmt.strip()
+                if stmt:
+                    try:
+                        conn.execute(text(stmt))
+                        logger.info(f"Trigger-Statement ausgeführt: {stmt[:50]}...")
+                    except Exception as stmt_error:
+                        logger.error(f"Fehler beim Trigger: {stmt[:50]}... - {stmt_error}")
+    else:
+        logger.warning("Trigger-SQL-Datei nicht gefunden: 04_trigger.sql")
+except Exception as e:
+    logger.error(f"Fehler beim Einbinden der Trigger-Datei: {e}")
+
+
 # Add a default route for health check
 @app.route('/')
 def health_check():
