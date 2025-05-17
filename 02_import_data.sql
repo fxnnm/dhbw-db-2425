@@ -135,7 +135,6 @@ INSERT INTO wartung (id, fahrzeugid, datum, beschreibung)
 SELECT DISTINCT id, fahrzeugid, datum, TRIM(beschreibung) FROM wartung_stg;
 
 -- 11. Gerät-Installation
--- 11. Gerät-Installation
 LOAD DATA LOCAL INFILE 'data/11_geraet_installation.csv'
 INTO TABLE geraet_installation_stg
 FIELDS TERMINATED BY ','
