@@ -103,10 +103,6 @@ except Exception as e:
 
 # Automatically execute the 03_reports.sql script on app startup
 try:
-    logger.info("MySQL DB: %s", os.getenv("MYSQL_DB_NAME"))
-    logger.info("MySQL USER: %s", os.getenv("MYSQL_USER"))
-    logger.info("MySQL HOST: %s", os.getenv("MYSQL_HOST"))
-
     sql_file_path = os.path.join(os.path.dirname(__file__), "03_reports.sql")
 
     if not os.path.exists(sql_file_path):
@@ -144,6 +140,31 @@ try:
         logger.warning("Trigger-SQL-Datei nicht gefunden: 04_trigger.sql")
 except Exception as e:
     logger.error(f"Fehler beim Einbinden der Trigger-Datei: {e}")
+
+# Automatically execute stored procedure from 05_sp.sql
+try:
+    sp_file_path = os.path.join(os.path.dirname(__file__), "05_sp.sql")
+
+    if os.path.exists(sp_file_path):
+        with open(sp_file_path, "r", encoding="utf-8") as file:
+            sql_script = file.read()
+
+        # MySQL DELIMITER $$ entfernen und Split vorbereiten
+        statements = sql_script.replace("DELIMITER $$", "").replace("DELIMITER ;", "").split("$$")
+
+        with mysql_engine.begin() as conn:
+            for stmt in statements:
+                stmt = stmt.strip()
+                if stmt:
+                    try:
+                        conn.execute(text(stmt))
+                        logger.info(f"Stored Procedure Statement ausgeführt: {stmt[:50]}...")
+                    except Exception as stmt_error:
+                        logger.error(f"Fehler bei Stored Procedure: {stmt[:50]}... - {stmt_error}")
+    else:
+        logger.warning("Stored Procedure SQL-Datei nicht gefunden: 05_sp.sql")
+except Exception as e:
+    logger.error(f"Fehler beim Einbinden der Stored Procedure Datei: {e}")
 
 
 # Add a default route for health check
