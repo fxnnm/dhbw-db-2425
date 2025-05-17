@@ -172,3 +172,25 @@ def convert_to_mongodb(selected_tables, embed=True):
     session.close()
     print("Conversion completed.")
     return total_inserted  #
+
+def load_report_sql(report_key):
+    with open("03_reports.sql", "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    inside_block = False
+    current_key = None
+    report_lines = []
+
+    for line in lines:
+        if line.strip().startswith("-- REPORT:"):
+            current_key = line.strip().split(":", 1)[1].strip()
+            inside_block = (current_key == report_key)
+            continue
+        elif line.strip().startswith("-- ENDREPORT"):
+            if inside_block:
+                break
+            inside_block = False
+        elif inside_block:
+            report_lines.append(line.rstrip())
+
+    return "\n".join(report_lines) if report_lines else None
