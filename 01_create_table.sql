@@ -75,8 +75,8 @@ CREATE TABLE fahrt_stg (
     id INT,
     fahrzeugid INT,
     geraetid INT,
-    startzeit VARCHAR(30),
-    endzeit VARCHAR(30),
+    startzeitpunkt VARCHAR(30),
+    endzeitpunkt VARCHAR(30),
     route TEXT
 ) ENGINE=InnoDB;
 
