@@ -71,8 +71,7 @@ This project is a **Database Management Web Application** for MySQL and MongoDB.
    !!! It is important to start the application via python and not flask !!!
 
 5. **Open the Website:** (in the browser)
-   ```Use the following address: http://127.0.0.1:5000
-   ```
+   Use the following address: http://127.0.0.1:5000
 
 ---
 ### 📂 Project Structure
