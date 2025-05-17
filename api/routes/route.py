@@ -102,69 +102,101 @@ def register_routes(app):
 
     @app.route('/reports', methods=['GET', 'POST'])
     def reports():
-        """
-        Page that allows users to run reports using MySQL queries instead of MongoDB aggregation.
-        """
-        conn = get_mysql_connection()  # ✅ Uses default DB settings from .env/config
-
+        conn = get_mysql_connection()
         available_reports = {
             "fahrten_fahrer": "Anzahl der Fahrten pro Fahrer",
-            "fahrten_fahrer": "Anzahl der Fahrten pro Fahrer",
+            "durchschnitt_geschwindigkeit": "Durchschnittliche Geschwindigkeit und Motortemperatur (März 2024)",
+            "aktive_fahrer": "Fahrer mit Fahrten in den letzten 15 Monaten",
+            "max_geschwindigkeit": "Höchste Geschwindigkeit pro Fahrer"
         }
-
-        if request.method == 'POST':
-            selected_report = request.form.get('report_type')
-            return redirect(url_for('reports', report_type=selected_report))
-        else:
-            selected_report = request.args.get('report_type')
-            page = request.args.get('page', 1, type=int)
-
         report_data = []
+        selected_report = request.form.get("report_type") if request.method == "POST" else request.args.get("report_type")
+        page = int(request.args.get("page", 1))
 
-        # Connect to MySQL
-        cursor = conn.cursor()
+        try:
+            query = None
+            if selected_report == "fahrten_fahrer":
+                query = """
+                    SELECT f.id AS fahrerID, f.vorname, f.nachname, COUNT(ff.fahrtid) AS anzahl_fahrten
+                    FROM fahrer f
+                    LEFT JOIN fahrt_fahrer ff ON f.id = ff.fahrerid
+                    GROUP BY f.id, f.vorname, f.nachname
+                    ORDER BY anzahl_fahrten DESC
+                """
+            elif selected_report == "durchschnitt_geschwindigkeit":
+                query = """
+                    SELECT 
+                        ff.fahrerid,
+                        fa.vorname,
+                        fa.nachname,
+                        ROUND(AVG(fp.geschwindigkeit), 2) AS durchschnitt_geschwindigkeit,
+                        ROUND(AVG(fp.motortemperatur), 2) AS durchschnitt_motortemperatur
+                    FROM fahrzeugparameter fp
+                    JOIN fahrt f ON fp.fahrtid = f.id
+                    JOIN fahrt_fahrer ff ON f.id = ff.fahrtid
+                    JOIN fahrer fa ON ff.fahrerid = fa.id
+                    WHERE fp.geschwindigkeit IS NOT NULL
+                    AND fp.motortemperatur IS NOT NULL
+                    AND f.startzeitpunkt IS NOT NULL
+                    GROUP BY ff.fahrerid, fa.vorname, fa.nachname;
+                """
+            elif selected_report == "aktive_fahrer":
+                query = """
+                    SELECT DISTINCT ff.fahrerid, fa.vorname, fa.nachname
+                    FROM fahrt f
+                    JOIN fahrer_fahrzeug ff ON f.fahrzeugid = ff.fahrzeugid
+                    JOIN fahrer fa ON ff.fahrerid = fa.id
+                    WHERE f.startzeitpunkt >= DATE_SUB(CURDATE(), INTERVAL 15 MONTH)
+                    AND (
+                        (ff.gueltig_bis IS NULL AND f.startzeitpunkt >= ff.gueltig_ab)
+                        OR (f.startzeitpunkt BETWEEN ff.gueltig_ab AND ff.gueltig_bis)
+                    );
+                """
+            elif selected_report == "max_geschwindigkeit":
+                query = """
+                    SELECT 
+                        ff.fahrerid,
+                        fa.vorname,
+                        fa.nachname,
+                        MAX(fp.geschwindigkeit) AS max_geschwindigkeit
+                    FROM fahrzeugparameter fp
+                    JOIN fahrt f ON fp.fahrtid = f.id
+                    JOIN fahrt_fahrer ff ON f.id = ff.fahrtid
+                    JOIN fahrer fa ON ff.fahrerid = fa.id
+                    WHERE fp.geschwindigkeit IS NOT NULL
+                    GROUP BY ff.fahrerid, fa.vorname, fa.nachname;
+                """
 
-        # -------------------------------------------------------------------------
-        # 🚗 Report: Anzahl der Fahrten pro Fahrer
-        # -------------------------------------------------------------------------
-        if selected_report == "fahrten_fahrer":
-            query = """
-               SELECT f.id as fahrerID, f.vorname, f.nachname, COUNT(ff.fahrtid) as anzahl_fahrten
-               FROM fahrer f
-               LEFT JOIN fahrt_fahrer ff ON f.id = ff.fahrerid
-               GROUP BY f.id, f.vorname, f.nachname
-               ORDER BY anzahl_fahrten DESC
-            """
-            cursor.execute(query)
-            report_data = cursor.fetchall()
-            report_data = [
-                {"fahrerID": row[0], "vorname": row[1], "nachname": row[2], "anzahl_fahrten": row[3]}
-                for row in report_data]
+            if query is not None:
+                cursor = conn.cursor()
+                cursor.execute(query)
+                columns = [col[0] for col in cursor.description]
+                rows = cursor.fetchall()
+                report_data = [dict(zip(columns, row)) for row in rows]
+                cursor.close()
 
-        # Close MySQL connection
-        cursor.close()
+        except Exception as e:
+            print("Fehler bei Reports-Abfrage:", e)
+            report_data = []
+
         conn.close()
 
-        # -------------------------------------------------------------------------
-        # Pagination
-        # -------------------------------------------------------------------------
         items_per_page = 10
         total_items = len(report_data)
         total_pages = (total_items + items_per_page - 1) // items_per_page
-
         start = (page - 1) * items_per_page
         end = start + items_per_page
         page_data = report_data[start:end]
 
         return render_template(
-            'reports.html',
+            "reports.html",
             available_reports=available_reports,
-            report_data=page_data,
             selected_report=selected_report,
+            report_data=page_data,
             page=page,
             total_pages=total_pages
         )
-    # Add more routes here...
+
 
     @app.route('/database-stats', methods=['GET'])
     def get_database_stats():
