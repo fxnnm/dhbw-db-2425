@@ -157,6 +157,19 @@ INSERT INTO geraet_installation (id, geraetid, fahrzeugid, einbau_datum, ausbau_
 SELECT DISTINCT id, geraetid, fahrzeugid, einbau_datum, ausbau_datum
 FROM geraet_installation_stg;
 
+-- Drop all staging tables after data import
+DROP TABLE IF EXISTS fahrzeug_stg;
+DROP TABLE IF EXISTS fahrer_stg;
+DROP TABLE IF EXISTS fahrer_fahrzeug_stg;
+DROP TABLE IF EXISTS geraet_stg;
+DROP TABLE IF EXISTS fahrt_stg;
+DROP TABLE IF EXISTS fahrt_fahrer_stg;
+DROP TABLE IF EXISTS fahrzeugparameter_stg;
+DROP TABLE IF EXISTS beschleunigung_stg;
+DROP TABLE IF EXISTS diagnose_stg;
+DROP TABLE IF EXISTS wartung_stg;
+DROP TABLE IF EXISTS geraet_installation_stg;
+
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 COMMIT;
