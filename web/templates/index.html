@@ -75,7 +75,9 @@
             style="width: auto;"
           >
             {% for table in tables %}
-              <option value="{{ table }}">{{ table }}</option>
+              {% if not (table.endswith('_stg') or table in ['import_log', 'changelog', 'konvertierung_log']) %}
+                <option value="{{ table }}">{{ table }}</option>
+              {% endif %}
             {% endfor %}
           </select>
           <button type="submit" class="btn btn-primary">✏️ Tabelle editieren</button>
