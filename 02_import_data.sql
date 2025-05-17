@@ -1,4 +1,4 @@
--- Skript für Daten-Import, Bereinigung sowie Integritäts- und Plausibilitätsprüfungen in MySQL
+-- Script for data import, cleansing, and integrity/plausibility checks in MySQL
 
 -- Temporarily disable foreign key checks for performance
 SET FOREIGN_KEY_CHECKS = 0;
@@ -143,7 +143,7 @@ IGNORE 1 LINES
 (id, geraetid, fahrzeugid, einbau_datum, ausbau_datum);
 
 UPDATE geraet_installation_stg
-SET 
+SET -- built to be robust against different line endings on Windows vs. macOS (Windows: \r\n, macOS: \n)
   einbau_datum = CASE 
                    WHEN LOWER(TRIM(REPLACE(einbau_datum, '\r', ''))) IN ('null', '') THEN NULL
                    ELSE STR_TO_DATE(TRIM(REPLACE(einbau_datum, '\r', '')), '%Y-%m-%d')

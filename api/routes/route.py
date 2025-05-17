@@ -17,7 +17,7 @@ def register_routes(app):
 
     @app.route('/')
     def index():
-        """Homepage that displays available MySQL tables."""
+        """Displays all available MySQL tables on the homepage."""
         tables = get_tables()
         return render_template('index.html', tables=tables, app_version='0.2.14')
 
@@ -101,6 +101,7 @@ def register_routes(app):
 
     @app.route('/reports', methods=['GET', 'POST'])
     def reports():
+        """Generates predefined reports by executing corresponding SQL queries."""
         conn = get_mysql_connection()
         available_reports = {
             "fahrten_fahrer": "Anzahl der Fahrten pro Fahrer",
@@ -118,7 +119,7 @@ def register_routes(app):
                 selected_report = (request.form.get("report_type") if request.method == "POST" else request.args.get("report_type") or "").strip()
                 query = load_report_sql(selected_report)
                 if not query:
-                    print(f"Kein SQL gefunden für Report: {selected_report}")
+                    print(f"No SQL found for report: {selected_report}")
                     conn.close()
                     return render_template(
                         "reports.html",
@@ -138,7 +139,7 @@ def register_routes(app):
                 cursor.close()
 
         except Exception as e:
-            print("Fehler bei Reports-Abfrage:", e)
+            print("Error executing report query:", e)
             report_data = []
 
         conn.close()
@@ -162,7 +163,7 @@ def register_routes(app):
 
     @app.route('/database-stats', methods=['GET'])
     def get_database_stats():
-        """Fetch statistics from both MongoDB and MySQL."""
+        """Fetch statistics (row count and last update time) from both MongoDB and MySQL."""
         stats = {
             "MongoDB": {},
             "MySQL": {}
@@ -305,6 +306,7 @@ def register_routes(app):
 
     @app.route('/update/<table_name>', methods=['POST'])
     def update_row(table_name):
+        """Handles row updates for both MySQL and MongoDB depending on table."""
         try:
             db = get_db(table_name)
         except Exception as e:
@@ -336,6 +338,7 @@ def register_routes(app):
 
     @app.route('/add-fahrt', methods=['POST'])
     def add_fahrt_route():
+        """Calls the addFahrt stored procedure to insert a new fahrt with validation."""
         from infrastructure.database.helpers.helpers import get_mysql_connection
         conn = get_mysql_connection()
         try:
@@ -352,9 +355,9 @@ def register_routes(app):
             )
             conn.commit()
             cursor.close()
-            flash("Sucessfully created new entry in table 'fahrt'", "success")
+            flash("Sucessfully created new entry in table fahrt", "success")
         except Exception as e:
-            print("Error while trying to create new entry in table 'fahrt':", e)
+            print("Error while trying to create new entry in table fahrt:", e)
             flash(f"Error while creating new entry: {str(e)}", "danger")
         finally:
             conn.close()

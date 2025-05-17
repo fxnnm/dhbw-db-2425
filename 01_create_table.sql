@@ -1,7 +1,7 @@
--- Deaktivieren der Fremdschlüsselprüfungen, damit die Tabellen in beliebiger Reihenfolge gelöscht werden können
+-- Disable foreign key checks so tables can be dropped in any order
 SET foreign_key_checks = 0;
 
--- Vorhandene Tabellen löschen (in Abhängigkeit von den Fremdschlüsseln)
+-- Drop existing tables (in dependency order based on foreign keys)
 DROP TABLE IF EXISTS geraet_installation;
 DROP TABLE IF EXISTS diagnose;
 DROP TABLE IF EXISTS beschleunigung;
@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS fahrzeug;
 DROP TABLE IF EXISTS konvertierung_log;
 DROP TABLE IF EXISTS changelog;
 
--- Staging-Tabellen löschen
+-- Drop staging tables
 DROP TABLE IF EXISTS geraet_installation_stg;
 DROP TABLE IF EXISTS diagnose_stg;
 DROP TABLE IF EXISTS beschleunigung_stg;
@@ -30,12 +30,12 @@ DROP TABLE IF EXISTS fahrer_stg;
 DROP TABLE IF EXISTS fahrzeug_stg;
 DROP TABLE IF EXISTS import_log;
 
--- Wieder aktivieren der Fremdschlüsselprüfungen
+-- Re-enable foreign key checks
 SET foreign_key_checks = 1;
 
--- Erstellen der Staging-Tabellen (ohne Constraints für einfacheren Import)
+-- Create staging tables (no constraints for easier import)
 
--- Staging-Tabelle 1: fahrzeug_stg
+-- Staging table 1: fahrzeug_stg
 CREATE TABLE fahrzeug_stg (
     id INT,
     hersteller VARCHAR(100),
@@ -43,25 +43,25 @@ CREATE TABLE fahrzeug_stg (
     baujahr INT
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 2: fahrer_stg
+-- Staging table 2: fahrer_stg
 CREATE TABLE fahrer_stg (
     id INT,
     vorname VARCHAR(50),
     nachname VARCHAR(50),
-    geburtsdatum VARCHAR(20), -- Als String für die Konvertierung
+    geburtsdatum VARCHAR(20), -- as string for conversion
     kontakt_nr VARCHAR(20),
     email VARCHAR(100)
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 3: fahrer_fahrzeug_stg
+-- Staging table 3: fahrer_fahrzeug_stg
 CREATE TABLE fahrer_fahrzeug_stg (
     fahrerid INT,
     fahrzeugid INT,
-    gueltig_ab VARCHAR(20), -- Als String für die Konvertierung
-    gueltig_bis VARCHAR(20) -- Als String für die Konvertierung
+    gueltig_ab VARCHAR(20), -- as string for conversion
+    gueltig_bis VARCHAR(20) -- as string for conversion
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 4: geraet_stg
+-- Staging table 4: geraet_stg
 CREATE TABLE geraet_stg (
     id INT,
     fahrzeugid INT,
@@ -70,7 +70,7 @@ CREATE TABLE geraet_stg (
     modell VARCHAR(100)
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 5: fahrt_stg
+-- Staging table 5: fahrt_stg
 CREATE TABLE fahrt_stg (
     id INT,
     fahrzeugid INT,
@@ -80,13 +80,13 @@ CREATE TABLE fahrt_stg (
     route TEXT
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 6: fahrt_fahrer_stg
+-- Staging table 6: fahrt_fahrer_stg
 CREATE TABLE fahrt_fahrer_stg (
     fahrtid INT,
     fahrerid INT
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 7: fahrzeugparameter_stg
+-- Staging table 7: fahrzeugparameter_stg
 CREATE TABLE fahrzeugparameter_stg (
     id INT,
     fahrtid INT,
@@ -97,7 +97,7 @@ CREATE TABLE fahrzeugparameter_stg (
     batterie FLOAT
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 8: beschleunigung_stg
+-- Staging table 8: beschleunigung_stg
 CREATE TABLE beschleunigung_stg (
     id INT,
     fahrtid INT,
@@ -107,7 +107,7 @@ CREATE TABLE beschleunigung_stg (
     z_achse FLOAT
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 9: diagnose_stg
+-- Staging table 9: diagnose_stg
 CREATE TABLE diagnose_stg (
     id INT,
     fahrtid INT,
@@ -116,7 +116,7 @@ CREATE TABLE diagnose_stg (
     beschreibung TEXT
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 10: wartung_stg
+-- Staging table 10: wartung_stg
 CREATE TABLE wartung_stg (
     id INT,
     fahrzeugid INT,
@@ -124,16 +124,16 @@ CREATE TABLE wartung_stg (
     beschreibung TEXT
 ) ENGINE=InnoDB;
 
--- Staging-Tabelle 11: geraet_installation_stg
+-- Staging table 11: geraet_installation_stg
 CREATE TABLE geraet_installation_stg (
     id INT,
     geraetid INT,
     fahrzeugid INT,
-    einbau_datum VARCHAR(20), -- Als String für die Konvertierung
-    ausbau_datum VARCHAR(20) -- Als String für die Konvertierung
+    einbau_datum VARCHAR(20), -- as string for conversion
+    ausbau_datum VARCHAR(20) -- as string for conversion
 ) ENGINE=InnoDB;
 
--- Import-Log-Tabelle (für Tracking des Import-Prozesses)
+-- Import log table (to track import process)
 CREATE TABLE import_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     run_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -143,9 +143,9 @@ CREATE TABLE import_log (
     status ENUM('OK','ERROR') NOT NULL DEFAULT 'OK'
 ) ENGINE=InnoDB;
 
--- Erstellen der Tabellen
+-- Create actual data tables
 
--- Tabelle 1: fahrzeug (01_fahrzeug.csv)
+-- Table 1: fahrzeug (01_fahrzeug.csv)
 CREATE TABLE fahrzeug (
     id INT AUTO_INCREMENT PRIMARY KEY,
     hersteller VARCHAR(100) NOT NULL,
@@ -153,7 +153,7 @@ CREATE TABLE fahrzeug (
     baujahr INT NOT NULL
 ) ENGINE=InnoDB;
 
--- Tabelle 2: fahrer (02_fahrer.csv)
+-- Table 2: fahrer (02_fahrer.csv)
 CREATE TABLE fahrer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     vorname VARCHAR(50) NOT NULL,
@@ -163,7 +163,7 @@ CREATE TABLE fahrer (
     email VARCHAR(100)
 ) ENGINE=InnoDB;
 
--- Tabelle 3: fahrer_fahrzeug (03_fahrer_fahrzeug.csv)
+-- Table 3: fahrer_fahrzeug (03_fahrer_fahrzeug.csv)
 CREATE TABLE fahrer_fahrzeug (
     fahrerid INT NOT NULL,
     fahrzeugid INT NOT NULL,
@@ -174,7 +174,7 @@ CREATE TABLE fahrer_fahrzeug (
     CONSTRAINT fk_ff_fahrzeug FOREIGN KEY (fahrzeugid) REFERENCES fahrzeug(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 4: geraet (04_geraet.csv)
+-- Table 4: geraet (04_geraet.csv)
 CREATE TABLE geraet (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fahrzeugid INT NOT NULL,
@@ -184,7 +184,7 @@ CREATE TABLE geraet (
     CONSTRAINT fk_geraet_fahrzeug FOREIGN KEY (fahrzeugid) REFERENCES fahrzeug(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 5: fahrt (05_fahrt.csv)
+-- Table 5: fahrt (05_fahrt.csv)
 CREATE TABLE fahrt (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fahrzeugid INT NOT NULL,
@@ -196,7 +196,7 @@ CREATE TABLE fahrt (
     CONSTRAINT fk_fahrt_geraet FOREIGN KEY (geraetid) REFERENCES geraet(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 6: fahrt_fahrer (06_fahrt_fahrer.csv)
+-- Table 6: fahrt_fahrer (06_fahrt_fahrer.csv)
 CREATE TABLE fahrt_fahrer (
     fahrtid INT NOT NULL,
     fahrerid INT NOT NULL,
@@ -205,7 +205,7 @@ CREATE TABLE fahrt_fahrer (
     CONSTRAINT fk_ffahrt_fahrer FOREIGN KEY (fahrerid) REFERENCES fahrer(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 7: fahrzeugparameter (07_fahrzeugparameter.csv)
+-- Table 7: fahrzeugparameter (07_fahrzeugparameter.csv)
 CREATE TABLE fahrzeugparameter (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fahrtid INT NOT NULL,
@@ -217,7 +217,7 @@ CREATE TABLE fahrzeugparameter (
     CONSTRAINT fk_fahrzeugparameter_fahrt FOREIGN KEY (fahrtid) REFERENCES fahrt(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 8: beschleunigung (08_beschleunigung.csv)
+-- Table 8: beschleunigung (08_beschleunigung.csv)
 CREATE TABLE beschleunigung (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fahrtid INT NOT NULL,
@@ -228,7 +228,7 @@ CREATE TABLE beschleunigung (
     CONSTRAINT fk_beschleunigung_fahrt FOREIGN KEY (fahrtid) REFERENCES fahrt(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 9: diagnose (09_diagnose.csv)
+-- Table 9: diagnose (09_diagnose.csv)
 CREATE TABLE diagnose (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fahrtid INT NOT NULL,
@@ -238,7 +238,7 @@ CREATE TABLE diagnose (
     CONSTRAINT fk_diagnose_fahrt FOREIGN KEY (fahrtid) REFERENCES fahrt(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 10: wartung (10_wartung.csv)
+-- Table 10: wartung (10_wartung.csv)
 CREATE TABLE wartung (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fahrzeugid INT NOT NULL,
@@ -247,7 +247,7 @@ CREATE TABLE wartung (
     CONSTRAINT fk_wartung_fahrzeug FOREIGN KEY (fahrzeugid) REFERENCES fahrzeug(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 11: geraet_installation (11_geraet_installation.csv)
+-- Table 11: geraet_installation (11_geraet_installation.csv)
 CREATE TABLE geraet_installation (
     id INT AUTO_INCREMENT PRIMARY KEY,
     geraetid INT NOT NULL,
@@ -258,7 +258,7 @@ CREATE TABLE geraet_installation (
     CONSTRAINT fk_gi_fahrzeug FOREIGN KEY (fahrzeugid) REFERENCES fahrzeug(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- Tabelle 12: konvertierung_log (für Logging aus convert.py)
+-- Table 12: konvertierung_log (used by convert.py)
 CREATE TABLE konvertierung_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     tabelle VARCHAR(255),
@@ -266,7 +266,7 @@ CREATE TABLE konvertierung_log (
     zeitstempel TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- Tabelle 13: changelog (für Tracking von Änderungen an den Tabellen)
+-- Table 13: changelog (for tracking updates to other tables)
 CREATE TABLE changelog (
     id INT AUTO_INCREMENT PRIMARY KEY,
     tabelle VARCHAR(255) NOT NULL,
@@ -276,4 +276,3 @@ CREATE TABLE changelog (
     alte_werte TEXT,
     neue_werte TEXT
 ) ENGINE=InnoDB;
-

@@ -7,22 +7,21 @@ from sqlalchemy.orm import sessionmaker
 from infrastructure.config.config import MYSQL_CONFIG_STRING
 
 # -----------------------------------------------------------------------------
-# Load Environment Variables
+# Load environment variables from .env file
 # -----------------------------------------------------------------------------
 load_dotenv()
 
 # -----------------------------------------------------------------------------
-# Flask Application Setup
+# Flask application setup
 # -----------------------------------------------------------------------------
 app = Flask(__name__, template_folder='web/templates', static_folder="static")
 app.secret_key = os.getenv("SECRET_KEY")
 
-# Ensure SECRET_KEY is set
 if not app.secret_key:
     raise ValueError("SECRET_KEY environment variable is not set.")
 
 # -----------------------------------------------------------------------------
-# Logging Setup
+# Logging configuration
 # -----------------------------------------------------------------------------
 logging.basicConfig(
     level=logging.INFO,
@@ -31,7 +30,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # -----------------------------------------------------------------------------
-# Configuration
+# SQLAlchemy configuration
 # -----------------------------------------------------------------------------
 from api.routes.route import register_routes
 register_routes(app)
@@ -40,10 +39,14 @@ mysql_engine = create_engine(MYSQL_CONFIG_STRING)
 mysql_session = sessionmaker(autocommit=False, autoflush=False, bind=mysql_engine)
 
 # -----------------------------------------------------------------------------
-# Initialization Steps
+# Database Setup and Initialization
 # -----------------------------------------------------------------------------
 
 def setup_tables():
+    """
+    Creates all required tables and imports CSV data on first startup.
+    Skips execution if tables already exist.
+    """
     expected_tables = [
         "fahrzeug", "fahrer", "fahrer_fahrzeug", "geraet", "fahrt", "fahrt_fahrer",
         "fahrzeugparameter", "beschleunigung", "diagnose", "wartung", "geraet_installation"
@@ -62,13 +65,13 @@ def setup_tables():
             existing_count = result.scalar()
 
         if existing_count > 0:
-            logger.info("Tabellen existieren bereits – Setup wird übersprungen.")
+            logger.info("Tables already exist – skipping setup.")
             return
 
-        # Tabellen erstellen
+        # Execute table creation script
         sql_file_path = os.path.join(os.path.dirname(__file__), "01_create_table.sql")
         if not os.path.exists(sql_file_path):
-            raise FileNotFoundError("01_create_table.sql nicht gefunden.")
+            raise FileNotFoundError("01_create_table.sql not found.")
 
         with open(sql_file_path, "r", encoding="utf-8") as file:
             statements = file.read().split(';')
@@ -77,12 +80,12 @@ def setup_tables():
             for stmt in statements:
                 if stmt.strip():
                     conn.execute(text(stmt))
-        logger.info("Alle Tabellen wurden erstellt.")
+        logger.info("All tables created successfully.")
 
-        # Importdaten laden
+        # Import initial data from CSVs
         import_path = os.path.join(os.path.dirname(__file__), "02_import_data.sql")
         if not os.path.exists(import_path):
-            logger.warning("02_import_data.sql nicht gefunden.")
+            logger.warning("02_import_data.sql not found.")
             return
 
         with open(import_path, "r", encoding="utf-8") as file:
@@ -92,34 +95,40 @@ def setup_tables():
             for stmt in import_statements:
                 if stmt.strip():
                     conn.execute(text(stmt))
-        logger.info("CSV-Daten wurden importiert.")
+        logger.info("CSV data imported successfully.")
 
     except Exception as e:
-        logger.error(f"Fehler beim Setup: {e}")
+        logger.error(f"Error during setup: {e}")
 
 def import_data():
-    logger.info("import_data() ist veraltet und wird nicht mehr verwendet.")
+    logger.info("import_data() is deprecated and no longer used.")
 
 def load_reports():
+    """
+    Load report file for reference (not executed on startup).
+    """
     try:
         sql_file_path = os.path.join(os.path.dirname(__file__), "03_reports.sql")
         if not os.path.exists(sql_file_path):
             logger.warning("Report file not found: 03_reports.sql")
         else:
             with open(sql_file_path, "r", encoding="utf-8") as file:
-                sql_script = file.read()
+                _ = file.read()
             logger.info("Report file 03_reports.sql loaded for reference.")
     except Exception as e:
         logger.error(f"Error loading report file: {e}")
 
 def load_triggers():
+    """
+    Load and execute all UPDATE triggers defined in 04_trigger.sql.
+    Trigger statements must be separated with $$.
+    """
     try:
         trigger_file_path = os.path.join(os.path.dirname(__file__), "04_trigger.sql")
         if os.path.exists(trigger_file_path):
             with open(trigger_file_path, "r", encoding="utf-8") as file:
                 sql_script = file.read()
 
-            # Kein DELIMITER-Ersatz nötig – direkt mit $$ splitten
             statements = sql_script.split("$$")
 
             with mysql_engine.begin() as conn:
@@ -128,15 +137,19 @@ def load_triggers():
                     if stmt:
                         try:
                             conn.execute(text(stmt))
-                            logger.info(f"Trigger-Statement ausgeführt: {stmt[:50]}...")
+                            logger.info(f"Trigger executed: {stmt[:50]}...")
                         except Exception as stmt_error:
-                            logger.error(f"Fehler beim Trigger: {stmt[:50]}... - {stmt_error}")
+                            logger.error(f"Trigger error: {stmt[:50]}... - {stmt_error}")
         else:
-            logger.warning("Trigger-SQL-Datei nicht gefunden: 04_trigger.sql")
+            logger.warning("Trigger SQL file not found: 04_trigger.sql")
     except Exception as e:
-        logger.error(f"Fehler beim Einbinden der Trigger-Datei: {e}")
+        logger.error(f"Error loading triggers: {e}")
 
 def load_stored_procedures():
+    """
+    Load and create all stored procedures from 05_sp.sql.
+    Procedure blocks must be separated with $$.
+    """
     try:
         sp_file_path = os.path.join(os.path.dirname(__file__), "05_sp.sql")
         if os.path.exists(sp_file_path):
@@ -150,29 +163,33 @@ def load_stored_procedures():
                     if stmt:
                         try:
                             conn.execute(text(stmt))
-                            logger.info(f"Stored Procedure Statement ausgeführt: {stmt[:50]}...")
+                            logger.info(f"Stored procedure executed: {stmt[:50]}...")
                         except Exception as stmt_error:
-                            logger.error(f"Fehler bei Stored Procedure: {stmt[:50]}... - {stmt_error}")
+                            logger.error(f"Stored procedure error: {stmt[:50]}... - {stmt_error}")
         else:
-            logger.warning("Stored Procedure SQL-Datei nicht gefunden: 05_sp.sql")
+            logger.warning("Stored procedure file not found: 05_sp.sql")
     except Exception as e:
-        logger.error(f"Fehler beim Einbinden der Stored Procedure Datei: {e}")
+        logger.error(f"Error loading stored procedures: {e}")
 
-# Add a default route for health check
+# -----------------------------------------------------------------------------
+# Routes
+# -----------------------------------------------------------------------------
+
 @app.route('/')
 def health_check():
+    """Simple route to confirm the application is running."""
     return {"status": "App is running"}, 200
 
 @app.route('/execute-import', methods=['POST'])
 def execute_import():
+    """Disabled to avoid repeated import after startup."""
     return "This endpoint is disabled to prevent re-execution of the import script.", 403
 
-# Conditional debug mode based on environment variable
+# -----------------------------------------------------------------------------
+# Application Entry Point
+# -----------------------------------------------------------------------------
 debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 
-# -----------------------------------------------------------------------------
-# Main Entrypoint
-# -----------------------------------------------------------------------------
 if __name__ == '__main__':
     setup_tables()
     load_reports()

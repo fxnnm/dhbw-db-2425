@@ -174,23 +174,32 @@ def convert_to_mongodb(selected_tables, embed=True):
     return total_inserted  #
 
 def load_report_sql(report_key):
+    # Open the SQL file that contains multiple named report queries
     with open("03_reports.sql", "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    inside_block = False
-    current_key = None
-    report_lines = []
+    # State variables to track the parsing status
+    inside_block = False            # True when currently inside the desired report block
+    current_key = None              # Current report key being processed
+    report_lines = []              # List to collect the SQL lines for the matched report
 
     for line in lines:
+        # Check for the start of a report block
         if line.strip().startswith("-- REPORT:"):
             current_key = line.strip().split(":", 1)[1].strip()
+            # Enable block collection only if the current key matches the desired one
             inside_block = (current_key == report_key)
             continue
+
+        # End of report block
         elif line.strip().startswith("-- ENDREPORT"):
             if inside_block:
-                break
+                break  # Stop processing once the full block has been collected
             inside_block = False
+
+        # Collect lines only if we are inside the correct report block
         elif inside_block:
             report_lines.append(line.rstrip())
 
+    # Return the collected SQL statement as a single string (or None if not found)
     return "\n".join(report_lines) if report_lines else None
