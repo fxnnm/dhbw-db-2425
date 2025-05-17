@@ -43,32 +43,37 @@ mysql_session = sessionmaker(autocommit=False, autoflush=False, bind=mysql_engin
 # -----------------------------------------------------------------------------
 # Tabellen in MySQL erstellen
 # -----------------------------------------------------------------------------
-try:
-    sql_file_path = os.path.join(os.path.dirname(__file__), "01_create_table.sql")
+# Add a flag to ensure scripts are executed only once during app startup
+scripts_executed = False
 
-    if not os.path.exists(sql_file_path):
-        raise FileNotFoundError(f"SQL file not found: {sql_file_path}")
+if not scripts_executed:
+    try:
+        sql_file_path = os.path.join(os.path.dirname(__file__), "01_create_table.sql")
 
-    with open(sql_file_path, "r", encoding="utf-8") as file:
-        sql_script = file.read()
+        if not os.path.exists(sql_file_path):
+            raise FileNotFoundError(f"SQL file not found: {sql_file_path}")
 
-    statements = sql_script.split(';')
+        with open(sql_file_path, "r", encoding="utf-8") as file:
+            sql_script = file.read()
 
-    with mysql_engine.begin() as connection:
-        for stmt in statements:
-            stmt = stmt.strip()
-            if stmt:  # Skip empty or whitespace-only statements
-                try:
-                    connection.execute(text(stmt))
-                    logger.info(f"Executed statement: {stmt[:50]}...")  # Log the first 50 characters of the statement
-                except Exception as stmt_error:
-                    logger.error(f"Error executing statement: {stmt[:50]}... - {stmt_error}")
+        statements = sql_script.split(';')
 
-    logger.info("Tabellen wurden erfolgreich erstellt.")
-except FileNotFoundError as fnf_error:
-    logger.error(fnf_error)
-except Exception as e:
-    logger.error("Fehler beim Erstellen der Tabellen: %s", e)
+        with mysql_engine.begin() as connection:
+            for stmt in statements:
+                stmt = stmt.strip()
+                if stmt:  # Skip empty or whitespace-only statements
+                    try:
+                        connection.execute(text(stmt))
+                        logger.info(f"Executed statement: {stmt[:50]}...")  # Log the first 50 characters of the statement
+                    except Exception as stmt_error:
+                        logger.error(f"Error executing statement: {stmt[:50]}... - {stmt_error}")
+
+        logger.info("Tabellen wurden erfolgreich erstellt.")
+        scripts_executed = True
+    except FileNotFoundError as fnf_error:
+        logger.error(fnf_error)
+    except Exception as e:
+        logger.error("Fehler beim Erstellen der Tabellen: %s", e)
 
 # Automatically execute the 02_import_data.sql script on app startup
 try:

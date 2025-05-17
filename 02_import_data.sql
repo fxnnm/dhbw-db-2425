@@ -67,12 +67,12 @@ INTO TABLE fahrt_stg
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 LINES
-(id, fahrzeugid, geraetid, startzeit, endzeit, route);
+(id, fahrzeugid, geraetid, startzeitpunkt, endzeitpunkt, route);
 UPDATE fahrt_stg
-SET startzeit = STR_TO_DATE(startzeit, '%Y-%m-%d %H:%i:%s'),
-    endzeit = STR_TO_DATE(endzeit, '%Y-%m-%d %H:%i:%s');
+SET startzeitpunkt = STR_TO_DATE(startzeitpunkt, '%d.%m.%Y %H:%i'),
+    endzeitpunkt = STR_TO_DATE(endzeitpunkt, '%d.%m.%Y %H:%i');
 INSERT INTO fahrt (id, fahrzeugid, geraetid, startzeitpunkt, endzeitpunkt, route)
-SELECT DISTINCT id, fahrzeugid, geraetid, startzeit, endzeit, TRIM(route)
+SELECT DISTINCT id, fahrzeugid, geraetid, startzeitpunkt, endzeitpunkt, TRIM(route)
 FROM fahrt_stg
 WHERE fahrzeugid IS NOT NULL;  -- Exclude rows with NULL 'fahrzeugid'
 
