@@ -152,15 +152,12 @@
     fetch('/database-stats')
       .then(response => response.json())
       .then(data => {
-        // Get table bodies
         const mongoTableBody = document.querySelector("#mongodb-stats-table tbody");
         const mysqlTableBody = document.querySelector("#mysql-stats-table tbody");
 
-        // Clear existing rows
         mongoTableBody.innerHTML = "";
         mysqlTableBody.innerHTML = "";
 
-        // Handle MongoDB stats
         if (data.MongoDB && Object.keys(data.MongoDB).length > 0) {
           for (const [collection, stats] of Object.entries(data.MongoDB)) {
             mongoTableBody.innerHTML += `
@@ -175,7 +172,6 @@
           mongoTableBody.innerHTML = `<tr><td colspan="3" class="text-center">Keine MongoDB-Daten verfügbar</td></tr>`;
         }
 
-        // Handle MySQL stats
         if (data.MySQL && Object.keys(data.MySQL).length > 0) {
           for (const [table, stats] of Object.entries(data.MySQL)) {
             mysqlTableBody.innerHTML += `
@@ -201,7 +197,6 @@
       });
   }
 
-  // Fetch stats when the page loads
   document.addEventListener("DOMContentLoaded", fetchDatabaseStats);
 </script>
 

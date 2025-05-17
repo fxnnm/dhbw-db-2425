@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import pymongo
 from infrastructure.database.helpers.helpers import (allowed_file, get_tables, convert_to_mongodb,
-                                                     insert_message_to_mysql, get_db)
+                                                     insert_message_to_mysql, get_db, get_mongo_client)
 from infrastructure.config.config import MONGO_CONFIG_STRING, MONGO_DB_NAME, ALLOWED_TABLES
 from sqlalchemy import MetaData, text
 from flask import flash
@@ -174,68 +174,34 @@ def register_routes(app):
             "MySQL": {}
         }
 
-        # -------------------- ✅ Fetch MongoDB Stats ✅ --------------------
+        # Fetch MongoDB Stats
         try:
-            mongo_client = pymongo.MongoClient(MONGO_CONFIG_STRING)
+            mongo_client = get_mongo_client()
             mongo_db = mongo_client[MONGO_DB_NAME]
 
-            collections = mongo_db.list_collection_names()
-            if not collections:
-                stats["MongoDB"]["error"] = "No collections found"
-
-            for collection_name in collections:
+            for collection_name in mongo_db.list_collection_names():
                 collection = mongo_db[collection_name]
-                total_rows = collection.count_documents({})
-
-                # Fetch last updated time from _id field
-                last_updated_doc = collection.find_one(sort=[("_id", -1)])
-                last_updated_time = last_updated_doc["_id"].generation_time.strftime(
-                    '%Y-%m-%d %H:%M:%S') if last_updated_doc else "N/A"
-
                 stats["MongoDB"][collection_name] = {
-                    "total_rows": total_rows,
-                    "last_updated": last_updated_time
+                    "total_rows": collection.count_documents({}),
+                    "last_updated": "N/A"  # MongoDB does not track last update by default
                 }
-
         except Exception as e:
             stats["MongoDB"]["error"] = str(e)
 
-        # -------------------- ✅ Fetch MySQL Stats ✅ --------------------
+        # Fetch MySQL Stats
         try:
-            conn = get_mysql_connection()  # ✅ Uses default DB settings from .env/config
-
-            query = """
-                SELECT 
-                    TABLE_NAME as table_name, 
-                    (SELECT COUNT(*) FROM information_schema.tables 
-                     WHERE table_schema = %s AND table_name = t.TABLE_NAME) as total_rows,
-                    (SELECT MAX(UPDATE_TIME) FROM information_schema.tables 
-                     WHERE table_schema = %s AND table_name = t.TABLE_NAME) as last_updated
-                FROM 
-                    information_schema.tables t
-                WHERE 
-                    t.TABLE_SCHEMA = %s
-                AND 
-                    t.TABLE_TYPE = 'BASE TABLE'
-                ORDER BY 
-                    t.TABLE_NAME
-            """
-
-            # ✅ Ensure cursor returns dictionaries instead of tuples
+            conn = get_mysql_connection()
             cursor = conn.cursor(dictionary=True)
-            cursor.execute(query, ("telematik", "telematik", "telematik"))
-            tables = cursor.fetchall()
+            cursor.execute("SHOW TABLE STATUS")
 
-            # ✅ Process MySQL results correctly
-            for table in tables:
-                stats["MySQL"][table["table_name"]] = {
-                    "total_rows": table["total_rows"] if table["total_rows"] is not None else "N/A",
-                    "last_updated": table["last_updated"] if table["last_updated"] else "N/A"
+            for row in cursor.fetchall():
+                stats["MySQL"][row['Name']] = {
+                    "total_rows": row['Rows'],
+                    "last_updated": row['Update_time'] or "N/A"
                 }
 
             cursor.close()
             conn.close()
-
         except Exception as e:
             stats["MySQL"]["error"] = str(e)
 
