@@ -283,13 +283,13 @@ ul {
 }
 
 ul li:before {
-    content: "📂 ";
+    /*content: "📂 ";*/
     font-size: 1.2em;
     color: #007bff;
 }
 
 ul li ul li:before {
-    content: "📄 ";
+    /*content: "📄 ";*/
     font-size: 1.1em;
     color: #6c757d;
 }

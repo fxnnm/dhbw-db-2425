@@ -127,30 +127,35 @@
 
     <!-- Pagination Controls -->
     <div class="d-flex align-items-center justify-content-between my-3">
+      <!-- Previous Button -->
       <div>
         {% if page > 1 %}
-          <a
-            href="{{ url_for('view_table', selected_table=table_name, page=page-1) }}"
-            class="btn btn-secondary"
-          >
+          <a href="{{ url_for('view_table', selected_table=table_name, page=page-1) }}" class="btn btn-secondary">
             Previous
           </a>
         {% endif %}
       </div>
-      <div>
-        Seite {{ page }} von {{ total_pages }}
+    
+      <!-- Page Navigation Info + Jump Input -->
+      <div class="d-flex align-items-center">
+        <form method="get" action="{{ url_for('view_table') }}" class="d-flex align-items-center">
+          <input type="hidden" name="selected_table" value="{{ table_name }}">
+          Page 
+          <input type="number" name="page" min="1" max="{{ total_pages }}" class="form-control mx-2" style="width: 80px;" value="{{ page }}">
+          of {{ total_pages }}
+          <button type="submit" class="btn btn-outline-primary btn-sm ms-2">Go</button>
+        </form>
       </div>
+    
+      <!-- Next Button -->
       <div>
         {% if page < total_pages %}
-          <a
-            href="{{ url_for('view_table', selected_table=table_name, page=page+1) }}"
-            class="btn btn-secondary"
-          >
+          <a href="{{ url_for('view_table', selected_table=table_name, page=page+1) }}" class="btn btn-secondary">
             Next
           </a>
         {% endif %}
       </div>
-    </div>
+    </div>    
 
     <a href="{{ url_for('index') }}" class="btn btn-secondary">⬅️ Zurück zur Hauptseite</a>
 
