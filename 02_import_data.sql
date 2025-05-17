@@ -135,17 +135,28 @@ INSERT INTO wartung (id, fahrzeugid, datum, beschreibung)
 SELECT DISTINCT id, fahrzeugid, datum, TRIM(beschreibung) FROM wartung_stg;
 
 -- 11. Gerät-Installation
+-- 11. Gerät-Installation
 LOAD DATA LOCAL INFILE 'data/11_geraet_installation.csv'
 INTO TABLE geraet_installation_stg
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (id, geraetid, fahrzeugid, einbau_datum, ausbau_datum);
+
 UPDATE geraet_installation_stg
-SET einbau_datum = STR_TO_DATE(NULLIF(einbau_datum, 'NULL\r'), '%Y-%m-%d'),
-    ausbau_datum = STR_TO_DATE(NULLIF(ausbau_datum, 'NULL\r'), '%Y-%m-%d');
+SET 
+  einbau_datum = CASE 
+                   WHEN LOWER(TRIM(einbau_datum)) IN ('null', '') THEN NULL
+                   ELSE STR_TO_DATE(TRIM(einbau_datum), '%Y-%m-%d')
+                 END,
+  ausbau_datum = CASE 
+                   WHEN LOWER(TRIM(ausbau_datum)) IN ('null', '') THEN NULL
+                   ELSE STR_TO_DATE(TRIM(ausbau_datum), '%Y-%m-%d')
+                 END;
+
 INSERT INTO geraet_installation (id, geraetid, fahrzeugid, einbau_datum, ausbau_datum)
-SELECT DISTINCT id, geraetid, fahrzeugid, einbau_datum, ausbau_datum FROM geraet_installation_stg;
+SELECT DISTINCT id, geraetid, fahrzeugid, einbau_datum, ausbau_datum
+FROM geraet_installation_stg;
 
 -- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
