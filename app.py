@@ -33,7 +33,6 @@ logger = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Configuration
 # -----------------------------------------------------------------------------
-
 from api.routes.route import register_routes
 register_routes(app)
 print(f"MYSQL_CONFIG_STRING: {MYSQL_CONFIG_STRING}")
@@ -41,132 +40,118 @@ mysql_engine = create_engine(MYSQL_CONFIG_STRING)
 mysql_session = sessionmaker(autocommit=False, autoflush=False, bind=mysql_engine)
 
 # -----------------------------------------------------------------------------
-# Function to execute SQL scripts during startup
+# Initialization Steps
 # -----------------------------------------------------------------------------
 
-def execute_startup_scripts():
+def setup_tables():
     try:
         sql_file_path = os.path.join(os.path.dirname(__file__), "01_create_table.sql")
-
         if not os.path.exists(sql_file_path):
             raise FileNotFoundError(f"SQL file not found: {sql_file_path}")
 
         with open(sql_file_path, "r", encoding="utf-8") as file:
             sql_script = file.read()
-
         statements = sql_script.split(';')
 
         with mysql_engine.begin() as connection:
             for stmt in statements:
                 stmt = stmt.strip()
-                if stmt:  # Skip empty or whitespace-only statements
+                if stmt:
                     try:
                         connection.execute(text(stmt))
                         logger.info(f"Executed statement: {stmt[:50]}...")
                     except Exception as stmt_error:
                         logger.error(f"Error executing statement: {stmt[:50]}... - {stmt_error}")
-
         logger.info("Tabellen wurden erfolgreich erstellt.")
+    except Exception as e:
+        logger.error(f"Fehler beim Erstellen der Tabellen: {e}")
 
-        # Execute the second script
+def import_data():
+    try:
         sql_file_path = os.path.join(os.path.dirname(__file__), "02_import_data.sql")
-
         if not os.path.exists(sql_file_path):
-            logger.error("SQL file not found: 02_import_data.sql")
+            logger.warning("Import SQL file not found.")
+            return
+        with open(sql_file_path, "r", encoding="utf-8") as file:
+            sql_script = file.read()
+        statements = sql_script.split(';')
+
+        with mysql_engine.begin() as connection:
+            for stmt in statements:
+                stmt = stmt.strip()
+                if stmt:
+                    try:
+                        connection.execute(text(stmt))
+                        logger.info(f"Executed import statement: {stmt[:50]}...")
+                    except Exception as stmt_error:
+                        logger.error(f"Error executing import: {stmt[:50]}... - {stmt_error}")
+        logger.info("Import script executed successfully.")
+    except Exception as e:
+        logger.error(f"Fehler beim Import der Daten: {e}")
+
+def load_reports():
+    try:
+        sql_file_path = os.path.join(os.path.dirname(__file__), "03_reports.sql")
+        if not os.path.exists(sql_file_path):
+            logger.warning("Report file not found: 03_reports.sql")
         else:
             with open(sql_file_path, "r", encoding="utf-8") as file:
                 sql_script = file.read()
+            logger.info("Report file 03_reports.sql loaded for reference.")
+    except Exception as e:
+        logger.error(f"Error loading report file: {e}")
 
-            statements = sql_script.split(';')
 
-            with mysql_engine.begin() as connection:
+
+def load_triggers():
+    try:
+        trigger_file_path = os.path.join(os.path.dirname(__file__), "04_trigger.sql")
+        if os.path.exists(trigger_file_path):
+            with open(trigger_file_path, "r", encoding="utf-8") as file:
+                sql_script = file.read()
+            statements = sql_script.replace("DELIMITER $$", "").replace("DELIMITER ;", "").split("$$")
+
+            with mysql_engine.begin() as conn:
                 for stmt in statements:
                     stmt = stmt.strip()
-                    if stmt:  # Skip empty or whitespace-only statements
+                    if stmt:
                         try:
-                            connection.execute(text(stmt))
-                            logger.info(f"Executed statement: {stmt[:50]}...")
+                            conn.execute(text(stmt))
+                            logger.info(f"Trigger-Statement ausgeführt: {stmt[:50]}...")
                         except Exception as stmt_error:
-                            logger.error(f"Error executing statement: {stmt[:50]}... - {stmt_error}")
-
-            logger.info("Import script executed successfully.")
-    except FileNotFoundError as fnf_error:
-        logger.error(fnf_error)
+                            logger.error(f"Fehler beim Trigger: {stmt[:50]}... - {stmt_error}")
+        else:
+            logger.warning("Trigger-SQL-Datei nicht gefunden: 04_trigger.sql")
     except Exception as e:
-        logger.error("Fehler beim Ausführen der Startskripte: %s", e)
+        logger.error(f"Fehler beim Einbinden der Trigger-Datei: {e}")
 
-# Automatically execute the 03_reports.sql script on app startup
-try:
-    sql_file_path = os.path.join(os.path.dirname(__file__), "03_reports.sql")
+def load_stored_procedures():
+    try:
+        sp_file_path = os.path.join(os.path.dirname(__file__), "05_sp.sql")
+        if os.path.exists(sp_file_path):
+            with open(sp_file_path, "r", encoding="utf-8") as file:
+                sql_script = file.read()
+            statements = sql_script.replace("DELIMITER $$", "").replace("DELIMITER ;", "").split("$$")
 
-    if not os.path.exists(sql_file_path):
-        logger.warning("Report file not found: 03_reports.sql")
-    else:
-        with open(sql_file_path, "r", encoding="utf-8") as file:
-            sql_script = file.read()
-
-        # Check if it's only SELECT statements (not required to execute at startup)
-        logger.info("Report file 03_reports.sql loaded for reference.")
-except Exception as e:
-    logger.error(f"Error loading report file: {e}")
-
-# Automatically setup trigger from script 04_trigger.sql
-try:
-    trigger_file_path = os.path.join(os.path.dirname(__file__), "04_trigger.sql")
-
-    if os.path.exists(trigger_file_path):
-        with open(trigger_file_path, "r", encoding="utf-8") as file:
-            sql_script = file.read()
-
-        # Triggers have to be correctly replaced with DELIMITER $$ ... $$ DELIMITER ;
-        statements = sql_script.replace("DELIMITER $$", "").replace("DELIMITER ;", "").split("$$")
-
-        with mysql_engine.begin() as conn:
-            for stmt in statements:
-                stmt = stmt.strip()
-                if stmt:
-                    try:
-                        conn.execute(text(stmt))
-                        logger.info(f"Trigger-Statement ausgeführt: {stmt[:50]}...")
-                    except Exception as stmt_error:
-                        logger.error(f"Fehler beim Trigger: {stmt[:50]}... - {stmt_error}")
-    else:
-        logger.warning("Trigger-SQL-Datei nicht gefunden: 04_trigger.sql")
-except Exception as e:
-    logger.error(f"Fehler beim Einbinden der Trigger-Datei: {e}")
-
-# Automatically execute stored procedure from 05_sp.sql
-try:
-    sp_file_path = os.path.join(os.path.dirname(__file__), "05_sp.sql")
-
-    if os.path.exists(sp_file_path):
-        with open(sp_file_path, "r", encoding="utf-8") as file:
-            sql_script = file.read()
-
-        # MySQL DELIMITER $$ entfernen und Split vorbereiten
-        statements = sql_script.replace("DELIMITER $$", "").replace("DELIMITER ;", "").split("$$")
-
-        with mysql_engine.begin() as conn:
-            for stmt in statements:
-                stmt = stmt.strip()
-                if stmt:
-                    try:
-                        conn.execute(text(stmt))
-                        logger.info(f"Stored Procedure Statement ausgeführt: {stmt[:50]}...")
-                    except Exception as stmt_error:
-                        logger.error(f"Fehler bei Stored Procedure: {stmt[:50]}... - {stmt_error}")
-    else:
-        logger.warning("Stored Procedure SQL-Datei nicht gefunden: 05_sp.sql")
-except Exception as e:
-    logger.error(f"Fehler beim Einbinden der Stored Procedure Datei: {e}")
-
+            with mysql_engine.begin() as conn:
+                for stmt in statements:
+                    stmt = stmt.strip()
+                    if stmt:
+                        try:
+                            conn.execute(text(stmt))
+                            logger.info(f"Stored Procedure Statement ausgeführt: {stmt[:50]}...")
+                        except Exception as stmt_error:
+                            logger.error(f"Fehler bei Stored Procedure: {stmt[:50]}... - {stmt_error}")
+        else:
+            logger.warning("Stored Procedure SQL-Datei nicht gefunden: 05_sp.sql")
+    except Exception as e:
+        logger.error(f"Fehler beim Einbinden der Stored Procedure Datei: {e}")
 
 # Add a default route for health check
 @app.route('/')
 def health_check():
     return {"status": "App is running"}, 200
 
-# Function to execute the 02_import_data.sql script
 @app.route('/execute-import', methods=['POST'])
 def execute_import():
     return "This endpoint is disabled to prevent re-execution of the import script.", 403
@@ -178,6 +163,9 @@ debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 # Main Entrypoint
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
-    execute_startup_scripts()  # Call the function only during startup
+    setup_tables()
+    import_data()
+    load_reports()
+    load_triggers()
+    load_stored_procedures()
     app.run(debug=debug_mode)
-
