@@ -141,18 +141,18 @@ FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (id, geraetid, fahrzeugid, einbau_datum, ausbau_datum);
-
+ 
 UPDATE geraet_installation_stg
 SET 
   einbau_datum = CASE 
-                   WHEN LOWER(TRIM(einbau_datum)) IN ('null', '') THEN NULL
-                   ELSE STR_TO_DATE(TRIM(einbau_datum), '%Y-%m-%d')
+                   WHEN LOWER(TRIM(REPLACE(einbau_datum, '\r', ''))) IN ('null', '') THEN NULL
+                   ELSE STR_TO_DATE(TRIM(REPLACE(einbau_datum, '\r', '')), '%Y-%m-%d')
                  END,
   ausbau_datum = CASE 
-                   WHEN LOWER(TRIM(ausbau_datum)) IN ('null', '') THEN NULL
-                   ELSE STR_TO_DATE(TRIM(ausbau_datum), '%Y-%m-%d')
+                   WHEN LOWER(TRIM(REPLACE(ausbau_datum, '\r', ''))) IN ('null', '') THEN NULL
+                   ELSE STR_TO_DATE(TRIM(REPLACE(ausbau_datum, '\r', '')), '%Y-%m-%d')
                  END;
-
+ 
 INSERT INTO geraet_installation (id, geraetid, fahrzeugid, einbau_datum, ausbau_datum)
 SELECT DISTINCT id, geraetid, fahrzeugid, einbau_datum, ausbau_datum
 FROM geraet_installation_stg;
