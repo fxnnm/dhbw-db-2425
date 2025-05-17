@@ -16,7 +16,7 @@
 - [x] Hinzufügen der Collection unfall.json in MongoDB 🔴
 - [x] Editieren der MySQL-Tabellen soll in eine Changelog-Tabelle getriggert werden (als SQL codiert) 🔴
 - [x] Eine Stored Procedure zum Hinzufügen einer neuen Fahrt (als SQL codiert) 🔴
-- [ ] Änderungen sollen immer persistent in die MySQL-Datenbank geschrieben werden 🔴
+- [x] Änderungen sollen immer persistent in die MySQL-Datenbank geschrieben werden 🔴
 
 
 Mögliche Skriptgestaltung:

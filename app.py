@@ -44,50 +44,61 @@ mysql_session = sessionmaker(autocommit=False, autoflush=False, bind=mysql_engin
 # -----------------------------------------------------------------------------
 
 def setup_tables():
+    expected_tables = [
+        "fahrzeug", "fahrer", "fahrer_fahrzeug", "geraet", "fahrt", "fahrt_fahrer",
+        "fahrzeugparameter", "beschleunigung", "diagnose", "wartung", "geraet_installation"
+    ]
+
     try:
+        with mysql_engine.connect() as conn:
+            placeholders = ", ".join([":tbl" + str(i) for i in range(len(expected_tables))])
+            query = f"""
+                SELECT COUNT(*) FROM information_schema.tables
+                WHERE table_schema = :db AND table_name IN ({placeholders})
+            """
+            params = {"db": os.getenv("MYSQL_DB_NAME")}
+            params.update({f"tbl{i}": t for i, t in enumerate(expected_tables)})
+            result = conn.execute(text(query), params)
+            existing_count = result.scalar()
+
+        if existing_count > 0:
+            logger.info("Tabellen existieren bereits – Setup wird übersprungen.")
+            return
+
+        # Tabellen erstellen
         sql_file_path = os.path.join(os.path.dirname(__file__), "01_create_table.sql")
         if not os.path.exists(sql_file_path):
-            raise FileNotFoundError(f"SQL file not found: {sql_file_path}")
+            raise FileNotFoundError("01_create_table.sql nicht gefunden.")
 
         with open(sql_file_path, "r", encoding="utf-8") as file:
-            sql_script = file.read()
-        statements = sql_script.split(';')
+            statements = file.read().split(';')
 
-        with mysql_engine.begin() as connection:
+        with mysql_engine.begin() as conn:
             for stmt in statements:
-                stmt = stmt.strip()
-                if stmt:
-                    try:
-                        connection.execute(text(stmt))
-                        logger.info(f"Executed statement: {stmt[:50]}...")
-                    except Exception as stmt_error:
-                        logger.error(f"Error executing statement: {stmt[:50]}... - {stmt_error}")
-        logger.info("Tabellen wurden erfolgreich erstellt.")
+                if stmt.strip():
+                    conn.execute(text(stmt))
+        logger.info("Alle Tabellen wurden erstellt.")
+
+        # Importdaten laden
+        import_path = os.path.join(os.path.dirname(__file__), "02_import_data.sql")
+        if not os.path.exists(import_path):
+            logger.warning("02_import_data.sql nicht gefunden.")
+            return
+
+        with open(import_path, "r", encoding="utf-8") as file:
+            import_statements = file.read().split(';')
+
+        with mysql_engine.begin() as conn:
+            for stmt in import_statements:
+                if stmt.strip():
+                    conn.execute(text(stmt))
+        logger.info("CSV-Daten wurden importiert.")
+
     except Exception as e:
-        logger.error(f"Fehler beim Erstellen der Tabellen: {e}")
+        logger.error(f"Fehler beim Setup: {e}")
 
 def import_data():
-    try:
-        sql_file_path = os.path.join(os.path.dirname(__file__), "02_import_data.sql")
-        if not os.path.exists(sql_file_path):
-            logger.warning("Import SQL file not found.")
-            return
-        with open(sql_file_path, "r", encoding="utf-8") as file:
-            sql_script = file.read()
-        statements = sql_script.split(';')
-
-        with mysql_engine.begin() as connection:
-            for stmt in statements:
-                stmt = stmt.strip()
-                if stmt:
-                    try:
-                        connection.execute(text(stmt))
-                        logger.info(f"Executed import statement: {stmt[:50]}...")
-                    except Exception as stmt_error:
-                        logger.error(f"Error executing import: {stmt[:50]}... - {stmt_error}")
-        logger.info("Import script executed successfully.")
-    except Exception as e:
-        logger.error(f"Fehler beim Import der Daten: {e}")
+    logger.info("import_data() ist veraltet und wird nicht mehr verwendet.")
 
 def load_reports():
     try:
@@ -101,15 +112,15 @@ def load_reports():
     except Exception as e:
         logger.error(f"Error loading report file: {e}")
 
-
-
 def load_triggers():
     try:
         trigger_file_path = os.path.join(os.path.dirname(__file__), "04_trigger.sql")
         if os.path.exists(trigger_file_path):
             with open(trigger_file_path, "r", encoding="utf-8") as file:
                 sql_script = file.read()
-            statements = sql_script.replace("DELIMITER $$", "").replace("DELIMITER ;", "").split("$$")
+
+            # Kein DELIMITER-Ersatz nötig – direkt mit $$ splitten
+            statements = sql_script.split("$$")
 
             with mysql_engine.begin() as conn:
                 for stmt in statements:
@@ -164,7 +175,6 @@ debug_mode = os.getenv("FLASK_DEBUG", "false").lower() == "true"
 # -----------------------------------------------------------------------------
 if __name__ == '__main__':
     setup_tables()
-    import_data()
     load_reports()
     load_triggers()
     load_stored_procedures()
