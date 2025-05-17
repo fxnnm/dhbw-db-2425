@@ -36,6 +36,7 @@
 
     <h1 class="mb-4">Tabelle: {{ table_name }}</h1>
 
+    <!-- Flash Messages when changes to tables are made -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -46,7 +47,8 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-
+    
+    <!-- Possibility to create an entry in table "fahrt" -->
     {% if table_name == 'fahrt' %}
     <div class="card mb-4">
       <div class="card-header">Neue Fahrt hinzufügen</div>

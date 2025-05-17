@@ -1,4 +1,4 @@
--- UPDATE Trigger für Tabelle: fahrzeug
+-- UPDATE Trigger for table: fahrzeug
 DROP TRIGGER IF EXISTS trg_fahrzeug_after_update;
 $$
 CREATE TRIGGER trg_fahrzeug_after_update
@@ -16,7 +16,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: fahrer
+-- UPDATE Trigger for table: fahrer
 DROP TRIGGER IF EXISTS trg_fahrer_after_update;
 $$
 CREATE TRIGGER trg_fahrer_after_update
@@ -34,7 +34,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: fahrer_fahrzeug
+-- UPDATE Trigger for table: fahrer_fahrzeug
 DROP TRIGGER IF EXISTS trg_fahrer_fahrzeug_after_update;
 $$
 CREATE TRIGGER trg_fahrer_fahrzeug_after_update
@@ -52,7 +52,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: geraet
+-- UPDATE Trigger for table: geraet
 DROP TRIGGER IF EXISTS trg_geraet_after_update;
 $$
 CREATE TRIGGER trg_geraet_after_update
@@ -70,7 +70,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: fahrt
+-- UPDATE Trigger for table: fahrt
 DROP TRIGGER IF EXISTS trg_fahrt_after_update;
 $$
 CREATE TRIGGER trg_fahrt_after_update
@@ -88,7 +88,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: fahrt_fahrer
+-- UPDATE Trigger for table: fahrt_fahrer
 DROP TRIGGER IF EXISTS trg_fahrt_fahrer_after_update;
 $$
 CREATE TRIGGER trg_fahrt_fahrer_after_update
@@ -106,7 +106,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: fahrzeugparameter
+-- UPDATE Trigger for table: fahrzeugparameter
 DROP TRIGGER IF EXISTS trg_fahrzeugparameter_after_update;
 $$
 CREATE TRIGGER trg_fahrzeugparameter_after_update
@@ -124,7 +124,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: beschleunigung
+-- UPDATE Trigger for table: beschleunigung
 DROP TRIGGER IF EXISTS trg_beschleunigung_after_update;
 $$
 CREATE TRIGGER trg_beschleunigung_after_update
@@ -142,7 +142,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: diagnose
+-- UPDATE Trigger for table: diagnose
 DROP TRIGGER IF EXISTS trg_diagnose_after_update;
 $$
 CREATE TRIGGER trg_diagnose_after_update
@@ -160,7 +160,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: wartung
+-- UPDATE Trigger for table: wartung
 DROP TRIGGER IF EXISTS trg_wartung_after_update;
 $$
 CREATE TRIGGER trg_wartung_after_update
@@ -178,7 +178,7 @@ BEGIN
 END;
 $$
 
--- UPDATE Trigger für Tabelle: geraet_installation
+-- UPDATE Trigger for table: geraet_installation
 DROP TRIGGER IF EXISTS trg_geraet_installation_after_update;
 $$
 CREATE TRIGGER trg_geraet_installation_after_update

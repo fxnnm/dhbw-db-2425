@@ -10,17 +10,17 @@ CREATE PROCEDURE addFahrt (
     IN p_route VARCHAR(255)
 )
 BEGIN
-    -- Validierung: Fahrzeug muss existieren
+    -- Validation: Vehicle has to exist
     IF NOT EXISTS (SELECT 1 FROM fahrzeug WHERE id = p_fahrzeugid) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Fahrzeug-ID existiert nicht';
     END IF;
 
-    -- Validierung: Geraet muss existieren
+    -- Validation: Device has to exist
     IF NOT EXISTS (SELECT 1 FROM geraet WHERE id = p_geraetid) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Geraet-ID existiert nicht';
     END IF;
 
-    -- Fahrt anlegen
+    -- Create new "fahrt"
     INSERT INTO fahrt (fahrzeugid, geraetid, startzeitpunkt, endzeitpunkt, route)
     VALUES (p_fahrzeugid, p_geraetid, p_startzeitpunkt, p_endzeitpunkt, p_route);
 END$$
