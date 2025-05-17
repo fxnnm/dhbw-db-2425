@@ -6,9 +6,8 @@ from infrastructure.database.helpers.helpers import (allowed_file, get_tables, c
 from infrastructure.config.config import MONGO_CONFIG_STRING, MONGO_DB_NAME, ALLOWED_TABLES
 from sqlalchemy import MetaData, text
 from flask import flash
-from infrastructure.database.helpers.helpers import get_mysql_connection
+from infrastructure.database.helpers.helpers import get_mysql_connection, load_report_sql
 from flask import render_template, request, redirect, url_for, jsonify
-
 
 # -----------------------------------------------------------------------------
 # Homepage Route
@@ -115,57 +114,20 @@ def register_routes(app):
 
         try:
             query = None
-            if selected_report == "fahrten_fahrer":
-                query = """
-                    SELECT f.id AS fahrerID, f.vorname, f.nachname, COUNT(ff.fahrtid) AS anzahl_fahrten
-                    FROM fahrer f
-                    LEFT JOIN fahrt_fahrer ff ON f.id = ff.fahrerid
-                    GROUP BY f.id, f.vorname, f.nachname
-                    ORDER BY anzahl_fahrten DESC
-                """
-            elif selected_report == "durchschnitt_geschwindigkeit":
-                query = """
-                    SELECT 
-                        ff.fahrerid,
-                        fa.vorname,
-                        fa.nachname,
-                        ROUND(AVG(fp.geschwindigkeit), 2) AS durchschnitt_geschwindigkeit,
-                        ROUND(AVG(fp.motortemperatur), 2) AS durchschnitt_motortemperatur
-                    FROM fahrzeugparameter fp
-                    JOIN fahrt f ON fp.fahrtid = f.id
-                    JOIN fahrt_fahrer ff ON f.id = ff.fahrtid
-                    JOIN fahrer fa ON ff.fahrerid = fa.id
-                    WHERE fp.geschwindigkeit IS NOT NULL
-                    AND fp.motortemperatur IS NOT NULL
-                    AND f.startzeitpunkt IS NOT NULL
-                    GROUP BY ff.fahrerid, fa.vorname, fa.nachname;
-                """
-            elif selected_report == "aktive_fahrer":
-                query = """
-                    SELECT DISTINCT ff.fahrerid, fa.vorname, fa.nachname
-                    FROM fahrt f
-                    JOIN fahrer_fahrzeug ff ON f.fahrzeugid = ff.fahrzeugid
-                    JOIN fahrer fa ON ff.fahrerid = fa.id
-                    WHERE f.startzeitpunkt >= DATE_SUB(CURDATE(), INTERVAL 15 MONTH)
-                    AND (
-                        (ff.gueltig_bis IS NULL AND f.startzeitpunkt >= ff.gueltig_ab)
-                        OR (f.startzeitpunkt BETWEEN ff.gueltig_ab AND ff.gueltig_bis)
-                    );
-                """
-            elif selected_report == "max_geschwindigkeit":
-                query = """
-                    SELECT 
-                        ff.fahrerid,
-                        fa.vorname,
-                        fa.nachname,
-                        MAX(fp.geschwindigkeit) AS max_geschwindigkeit
-                    FROM fahrzeugparameter fp
-                    JOIN fahrt f ON fp.fahrtid = f.id
-                    JOIN fahrt_fahrer ff ON f.id = ff.fahrtid
-                    JOIN fahrer fa ON ff.fahrerid = fa.id
-                    WHERE fp.geschwindigkeit IS NOT NULL
-                    GROUP BY ff.fahrerid, fa.vorname, fa.nachname;
-                """
+            if selected_report:
+                selected_report = (request.form.get("report_type") if request.method == "POST" else request.args.get("report_type") or "").strip()
+                query = load_report_sql(selected_report)
+                if not query:
+                    print(f"Kein SQL gefunden für Report: {selected_report}")
+                    conn.close()
+                    return render_template(
+                        "reports.html",
+                        available_reports=available_reports,
+                        selected_report=selected_report,
+                        report_data=[],
+                        page=1,
+                        total_pages=1
+                    )
 
             if query is not None:
                 cursor = conn.cursor()
