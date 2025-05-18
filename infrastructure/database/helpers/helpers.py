@@ -65,6 +65,24 @@ def get_mysql_connection():
         password=MYSQL_PASSWORD,
         database=MYSQL_DB_NAME
     )
+  
+def insert_conversion_log(table_name, count):
+    """
+    Inserts a conversion log into the konvertierung_log table in MySQL.
+    """
+    try:
+        conn = get_mysql_connection()
+        cursor = conn.cursor()
+        query = """
+            INSERT INTO konvertierung_log (tabelle, anzahl)
+            VALUES (%s, %s)
+        """
+        cursor.execute(query, (table_name, count))
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except mysql.connector.Error as err:
+        print(f"Error writing conversion log to MySQL: {err}")
 
 
 # Add this function to `helpers.py`
@@ -85,13 +103,11 @@ def get_db(table_name=None):
 
 def convert_to_mongodb(selected_tables, embed=True):
     """
-    Converts specified tables from MySQL to MongoDB. If 'embed' is True, it embeds
-    related data into a single 'embedded' collection; otherwise, each table is
-    converted to its own MongoDB collection.
+    Converts specified tables from MySQL to MongoDB. If 'embed' is True, embeds related data into a single 'embedded' collection; else flat collections.
     """
     from app import mysql_engine, mysql_session
 
-    client = pymongo.MongoClient(MONGO_CONFIG_STRING)
+    client = get_mongo_client()
     db = client[MONGO_DB_NAME]
 
     session = mysql_session()
@@ -109,69 +125,55 @@ def convert_to_mongodb(selected_tables, embed=True):
         return data
 
     total_inserted = 0
-
-    # If embed is True, create a single embedded collection
     if embed:
-        # Create a new collection for the embedded data
+        # Single embedded collection: clear previous contents
         embedded_collection = db['embedded']
-        
-        # Loop through each table and get data
+        embedded_collection.delete_many({})
         for table_name in selected_tables:
             if table_name not in meta.tables:
                 print(f"Table {table_name} not found. Skipping.")
                 continue
-                
             table = meta.tables[table_name]
-            query = table.select()
-            result = session.execute(query)
-            rows = [dict(row) for row in result]
-            
-            # Fix date objects for MongoDB compatibility
-            rows = [fix_dates(row) for row in rows]
-            
-            # Add table_name as a field to identify the source table
-            for row in rows:
-                row['source_table'] = table_name
-            
-            # Insert all rows in one batch
+            result = session.execute(table.select())
+            raw_rows = result.mappings().all()
+            rows = []
+            for rm in raw_rows:
+                data = dict(rm)
+                data = fix_dates(data)
+                # mark source in embedded mode
+                data['source_table'] = table_name
+                rows.append(data)
             if rows:
                 try:
                     embedded_collection.insert_many(rows)
                     total_inserted += len(rows)
                     print(f"Inserted {len(rows)} rows from {table_name} into embedded collection.")
+                    insert_conversion_log(table_name, len(rows))
                 except Exception as e:
                     print(f"Error inserting {table_name} data: {e}")
     else:
-        # Create separate collections for each table
+        # Flat collections per table
         for table_name in selected_tables:
             if table_name not in meta.tables:
                 print(f"Table {table_name} not found. Skipping.")
                 continue
-                
             table = meta.tables[table_name]
-            query = table.select()
-            result = session.execute(query)
-            rows = [dict(row) for row in result]
-            
-            # Fix date objects for MongoDB compatibility
-            rows = [fix_dates(row) for row in rows]
-            
-            # Create or clear collection
+            result = session.execute(table.select())
+            raw_rows = result.mappings().all()
+            rows = [fix_dates(dict(rm)) for rm in raw_rows]
             collection = db[table_name]
-            collection.delete_many({})  # Clear existing data
-            
-            # Insert all rows in one batch
+            collection.delete_many({})
             if rows:
                 try:
                     collection.insert_many(rows)
                     total_inserted += len(rows)
                     print(f"Inserted {len(rows)} rows into {table_name} collection.")
+                    insert_conversion_log(table_name, len(rows))
                 except Exception as e:
                     print(f"Error inserting {table_name} data: {e}")
-
     session.close()
     print("Conversion completed.")
-    return total_inserted  #
+    return total_inserted
 
 def load_report_sql(report_key):
     with open("03_reports.sql", "r", encoding="utf-8") as f:
