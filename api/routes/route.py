@@ -268,18 +268,19 @@ def register_routes(app):
         if request.method == 'POST':
             selected_tables = request.form.getlist('tables')
             convert_all = request.form.get('convert_all')
+            # Determine if embedding requested
             embed = request.form.get('embed')
+            do_embed = (embed == 'true')
 
             # If user selects 'convert all', override selected_tables
             if convert_all == 'true':
                 selected_tables = ALLOWED_TABLES
 
-            do_embed = (embed == 'true')
             start_time = datetime.now()
 
             try:
                 if selected_tables:
-                    # Perform conversion
+                    # Perform conversion: flat or embedded
                     num_inserted_rows = convert_to_mongodb(selected_tables, do_embed)
 
                     # Calculate and store duration
