@@ -1,6 +1,6 @@
 import pymongo
 import mysql.connector
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, select, and_
 import os
 from datetime import datetime, date
 from infrastructure.config.config import (MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB_NAME, MONGO_DB_NAME,
@@ -103,77 +103,144 @@ def get_db(table_name=None):
 
 def convert_to_mongodb(selected_tables, embed=True):
     """
-    Converts specified tables from MySQL to MongoDB. If 'embed' is True, embeds related data into a single 'embedded' collection; else flat collections.
+    Convert tables from MySQL into MongoDB collections.
+
+    Parameters:
+      selected_tables: list of MySQL table names to export.
+      embed: bool flag. If True, combine all tables into one 'embedded' MongoDB collection; if False, create separate collections per table.
+
+    Returns:
+      Total number of documents inserted into MongoDB.
     """
+    # Import MySQL engine and sessionmaker to avoid circular dependency
     from app import mysql_engine, mysql_session
 
-    client = get_mongo_client()
-    db = client[MONGO_DB_NAME]
-
     session = mysql_session()
-    meta = MetaData()
-    meta.reflect(bind=mysql_engine)
+    try:
+        # Establish MongoDB connection
+        client = get_mongo_client()
+        db = client[MONGO_DB_NAME]
 
-    def fix_dates(data):
-        """
-        Converts datetime.date objects to datetime.datetime to ensure compatibility
-        with MongoDB.
-        """
-        for key, value in data.items():
-            if isinstance(value, date):
-                data[key] = datetime(value.year, value.month, value.day)
-        return data
+        # Open a SQLAlchemy session for MySQL queries
+        session = mysql_session()
+        meta = MetaData()
+        meta.reflect(bind=mysql_engine)
 
-    total_inserted = 0
-    if embed:
-        # Single embedded collection: clear previous contents
-        embedded_collection = db['embedded']
-        embedded_collection.delete_many({})
-        for table_name in selected_tables:
-            if table_name not in meta.tables:
-                print(f"Table {table_name} not found. Skipping.")
-                continue
-            table = meta.tables[table_name]
-            result = session.execute(table.select())
-            raw_rows = result.mappings().all()
-            rows = []
-            for rm in raw_rows:
-                data = dict(rm)
-                data = fix_dates(data)
-                # mark source in embedded mode
-                data['source_table'] = table_name
-                rows.append(data)
-            if rows:
-                try:
-                    embedded_collection.insert_many(rows)
-                    total_inserted += len(rows)
-                    print(f"Inserted {len(rows)} rows from {table_name} into embedded collection.")
-                    insert_conversion_log(table_name, len(rows))
-                except Exception as e:
-                    print(f"Error inserting {table_name} data: {e}")
-    else:
-        # Flat collections per table
-        for table_name in selected_tables:
-            if table_name not in meta.tables:
-                print(f"Table {table_name} not found. Skipping.")
-                continue
-            table = meta.tables[table_name]
-            result = session.execute(table.select())
-            raw_rows = result.mappings().all()
-            rows = [fix_dates(dict(rm)) for rm in raw_rows]
-            collection = db[table_name]
-            collection.delete_many({})
-            if rows:
-                try:
-                    collection.insert_many(rows)
-                    total_inserted += len(rows)
-                    print(f"Inserted {len(rows)} rows into {table_name} collection.")
-                    insert_conversion_log(table_name, len(rows))
-                except Exception as e:
-                    print(f"Error inserting {table_name} data: {e}")
-    session.close()
-    print("Conversion completed.")
-    return total_inserted
+        # Helper: convert Python date objects to datetime for MongoDB compatibility
+        def fix_dates(data):
+            """
+            Convert datetime.date fields to datetime.datetime.
+            """
+            for key, value in data.items():
+                if isinstance(value, date):
+                    data[key] = datetime(value.year, value.month, value.day)
+            return data
+
+        # Counter for inserted documents
+        total_inserted = 0
+
+        if embed:
+            AVAILABLE_TABLES = ["fahrer", "fahrzeug", "geraet", "geraet_installation", "fahrzeugparameter", "beschleunigung", "diagnose", "wartung"]
+            selected = [tbl for tbl in selected_tables if tbl in AVAILABLE_TABLES]
+
+            embedded_collection = db['EmbeddedFahrt']
+            embedded_collection.delete_many({})
+
+            # Prefetch related tables
+            fahrzeug_table = meta.tables.get('fahrzeug')
+            geraet_table = meta.tables.get('geraet')
+            fahrt_fahrer_table = meta.tables.get('fahrt_fahrer')
+            fahrer_table = meta.tables.get('fahrer')
+            fahrzeugparameter_table = meta.tables.get('fahrzeugparameter')
+            beschleunigung_table = meta.tables.get('beschleunigung')
+            diagnose_table = meta.tables.get('diagnose')
+            wartung_table = meta.tables.get('wartung')
+            geraet_installation_table = meta.tables.get('geraet_installation')
+
+            def fetch_all(table):
+                return session.execute(select(table)).mappings().all() if table is not None else []
+
+            # Build lookup dictionaries
+            fahrzeug_data = {row['id']: fix_dates(dict(row)) for row in fetch_all(fahrzeug_table)}
+            geraet_data = {}
+            for row in fetch_all(geraet_table):
+                d = fix_dates(dict(row))
+                geraet_data.setdefault(d['id'], []).append(d)
+
+            # Driver-pivot data
+            fahrer_lookup = {row['id']: fix_dates(dict(row)) for row in fetch_all(fahrer_table)}
+            fahrt_fahrer_data = {}
+            for row in fetch_all(fahrt_fahrer_table):
+                r = dict(row)
+                f_id, fr_id = r.get('fahrtid'), r.get('fahrerid')
+                if fr_id in fahrer_lookup:
+                    fahrt_fahrer_data.setdefault(f_id, []).append(fahrer_lookup[fr_id])
+
+            # Other child tables grouped by key
+            def group_by(table, key):
+                data = {}
+                for row in fetch_all(table):
+                    r = fix_dates(dict(row))
+                    data.setdefault(r.get(key), []).append(r)
+                return data
+
+            fahrzeugparameter_data = group_by(fahrzeugparameter_table, 'fahrtid')
+            beschleunigung_data = group_by(beschleunigung_table, 'fahrtid')
+            diagnose_data = group_by(diagnose_table, 'fahrtid')
+            wartung_data = group_by(wartung_table, 'fahrzeugid')
+            geraet_installation_data = group_by(geraet_installation_table, 'fahrzeugid')
+
+            # Fetch all fahrt rows
+            parents = session.execute(select(meta.tables['fahrt'])).mappings().all()
+            embedded_docs = []
+            for parent in parents:
+                doc = fix_dates(dict(parent))
+                f_id = doc.get('id')
+                fv_id = doc.get('fahrzeugid')
+                gd_id = doc.get('geraetid')
+                doc['fahrzeug'] = fahrzeug_data.get(fv_id)
+                doc['fahrer'] = fahrt_fahrer_data.get(f_id, [])
+                doc['fahrzeugparameter'] = fahrzeugparameter_data.get(f_id, [])
+                doc['beschleunigung'] = beschleunigung_data.get(f_id, [])
+                doc['diagnose'] = diagnose_data.get(f_id, [])
+                doc['wartung'] = wartung_data.get(fv_id, [])
+                doc['geraet_installation'] = geraet_installation_data.get(fv_id, [])
+                doc['geraet'] = geraet_data.get(gd_id, [])
+                embedded_docs.append(doc)
+
+            if embedded_docs:
+                embedded_collection.insert_many(embedded_docs)
+                total_inserted += len(embedded_docs)
+            print(f"Inserted {total_inserted} embedded documents into 'EmbeddedFahrt' collection.")
+        else:
+             # FLAT MODE: create one MongoDB collection per table
+            for table_name in selected_tables:
+                if table_name not in meta.tables:
+                    print(f"Table {table_name} not found. Skipping.")
+                    continue
+                table = meta.tables[table_name]
+                result = session.execute(table.select())
+                raw_rows = result.mappings().all()
+                rows = [fix_dates(dict(rm)) for rm in raw_rows]
+                collection = db[table_name]
+                collection.delete_many({})  # Clear existing documents
+                if rows:
+                    try:
+                        collection.insert_many(rows)
+                        total_inserted += len(rows)
+                        print(f"Inserted {len(rows)} rows into {table_name} collection.")
+                        # Log conversion in MySQL
+                        insert_conversion_log(table_name, len(rows))
+                    except Exception as e:
+                        print(f"Error inserting {table_name} data: {e}")
+
+        # Close the SQL session and return the total count
+        print("Conversion completed.")
+        return total_inserted
+    except Exception as e:
+        print(f"Error during migration: {e}")
+    finally:
+        session.close()
 
 def load_report_sql(report_key):
     # Open the SQL file that contains multiple named report queries
